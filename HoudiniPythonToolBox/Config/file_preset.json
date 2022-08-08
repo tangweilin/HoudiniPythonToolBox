@@ -1,4 +1,3 @@
-file_info = 
 {
     "project":
     [
@@ -100,6 +99,6 @@ file_info =
                     }
                 }
             ]
-        },
+        }
     ]
 }
