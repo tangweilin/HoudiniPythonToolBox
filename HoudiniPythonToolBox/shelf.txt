@@ -1,0 +1,14 @@
+import sys
+from imp import reload
+reload(sys)
+import hou
+import os
+envPath = os.getenv('TOOLBOX')
+sys.path.append(envPath)
+theTool = hou.shelves.runningTool()
+import entry   
+reload(entry)
+
+if theTool.icon().count("%s/icons/shelf.png"%envPath)==0:
+        theTool.setIcon("%s/icons/shelf.png"%envPath)
+        theTool.setLabel("HoudiniPythonToolBox")

@@ -1,0 +1,1 @@
+"node = hou.pwd()\ngeo = node.geometry()\n\n# Add code to modify contents of geo.\n# Use drop down menu to select examples.\nimport hou\n"
