@@ -22,6 +22,7 @@ class ToolPath:
         self.__vex_expression_path = self.__vex_code_folder_path + '/VexExpressions'
         self.__python_codes_path = self.__python_code_folder_path + '/PythonCodes'
         self.__vex_text_path = self.__vex_code_folder_path + '/VexText'
+        self.__tool_file_manager_preset_path = self.__env_path + '/Config/file_preset.json'
 
     @property
     def env_path(self) -> str:
@@ -134,6 +135,14 @@ class ToolPath:
         :return: return Vex Texts preset folder path
         """
         return self.__vex_text_path
+
+    @property
+    def file_manager_preset_path(self) -> str:
+        """
+        ToolPathManager
+        :return: return File Manager Preset Json path
+        """
+        return self.__tool_file_manager_preset_path
 
     @classmethod
     def get_node_path_with_prefix(cls, path, node_type) -> str:

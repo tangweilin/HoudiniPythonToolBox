@@ -21,6 +21,7 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
     """
         Saving Current Node Preset Info To Json File
     """
+
     def __init__(self):
         super(SaveFileManagerInfo, self).__init__()
         self.setGeometry(1200, 1200, 370, 400)
@@ -107,3 +108,62 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         v_layout.addLayout(node_name_h_layout)
         v_layout.addLayout(author_h_layout)
         v_layout.addLayout(remark_h_layout)
+
+    def save_file_info_to_json_file(self) -> None:
+        pass
+
+    @classmethod
+    def load_file_info_from_json_file(cls) -> tuple:
+        file_preset_path = tool_path_manager.file_manager_preset_path
+        info_list = None
+        project_list = []
+        project_folder_list = []
+        project_file_name_list = []
+        try:
+            with open(file_preset_path, 'r') as f:
+                info_list = json.load(f)
+        except:
+            tool_error_info.show_exception_info('warning', 'load file manager preset info got wrong')
+        if info_list:
+            all_project_info = info_list['project']
+
+            if all_project_info:
+                for project_info in all_project_info:
+                    project_list.append(project_info['project_name'])
+
+                    all_folder_info = project_info['folder']
+
+                    if all_folder_info:
+                        for folder_info in all_folder_info:
+                            project_folder_dict = {'project_name': project_info['project_name'],
+                                                   'folder_name': folder_info['folder_name']}
+                            project_folder_list.append(project_folder_dict)
+
+                            all_file_info = folder_info['file_info']
+
+                            if all_file_info:
+                                all_file_name_info = all_file_info['file_name']
+                                all_file_dir_info = all_file_info['file_dir']
+                                all_file_type_info = all_file_info['file_type']
+                                if all_file_name_info and all_file_dir_info and all_file_type_info:
+                                    loop_range = len(all_file_name_info)
+                                    for i in range(0, loop_range):
+                                        project_folder_file_name_dict = {'project_name': project_info['project_name'],
+                                                                         'folder_name': folder_info['folder_name'],
+                                                                         'file_name': all_file_name_info[i],
+                                                                         'file_dir': all_file_dir_info[i],
+                                                                         'file_type': all_file_type_info[i]}
+                                        project_file_name_list.append(project_folder_file_name_dict)
+                                else:
+                                    tool_error_info.show_exception_info('warning',
+                                                                        'file manager file info length does not match')
+                            else:
+                                tool_error_info.show_exception_info('warning',
+                                                                    'file manager file info got none value')
+                    else:
+                        tool_error_info.show_exception_info('warning', 'file manager folder info got none value')
+            else:
+                tool_error_info.show_exception_info('warning', 'file manager project info got none value')
+        else:
+            tool_error_info.show_exception_info('warning', 'file manager info got none value')
+        return project_list, project_folder_list, project_file_name_list

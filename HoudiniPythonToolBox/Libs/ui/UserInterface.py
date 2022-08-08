@@ -378,46 +378,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_delete_btn)
 
         self.__file_manager_tree_view_widget = QtWidgets.QTreeView()
-        self.model = QtGui.QStandardItemModel(self)
-        # 设置表头信息
-        self.model = QtGui.QStandardItemModel(self)
-        self.model.setHorizontalHeaderLabels(['Item', 'info'])
-        #
-        # # 添加条目
-        # itemProject = QtGui.QStandardItem('Project')
-        # model.appendRow(itemProject)
-        # model.setItem(0, 1, QtGui.QStandardItem('Project info'))
-        #
-        # # 添加子条目
-        # itemChild = QtGui.QStandardItem('Folder1')
-        # itemProject.appendRow(itemChild)
-        # itemProject.setChild(0, 1, QtGui.QStandardItem('Folder info'))
-        #
-        # # 继续添加
-        # itemFolder = QtGui.QStandardItem('Folder2')
-        # itemProject.appendRow(itemFolder)
-        # for group in range(5):
-        #     itemGroup = QtGui.QStandardItem('group{}'.format(group + 1))
-        #     itemFolder.appendRow(itemGroup)
-        #     for ch in range(group + 1):
-        #         itemCh = QtGui.QStandardItem('member{}'.format(ch + 1))
-        #         # 添加复选框
-        #         itemCh.setCheckable(True)
-        #         itemGroup.appendRow(itemCh)
-        #         itemGroup.setChild(itemCh.index().row(), 1, QtGui.QStandardItem('member{}info'.format(ch + 1)))
-        # itemProject.setChild(itemFolder.index().row(), 1, QtGui.QStandardItem('Folder2 info'))
-
-        treeView = self.__file_manager_tree_view_widget
-        treeView.setModel(self.model)
-        # 调整第一列的宽度
-        treeView.header().resizeSection(0, 160)
-        # 设置成有虚线连接的方式
-        treeView.setStyle(QtWidgets.QStyleFactory.create('windows'))
-        # 完全展开
-        treeView.expandAll()
+        self.__file_manager__tree_view_model = QtGui.QStandardItemModel(self)
 
         file_manager_main_v_layout.addLayout(file_manager_main_h_layout)
         file_manager_main_v_layout.addWidget(self.__file_manager_tree_view_widget)
+        self.__setup_file_manager_tree_view_info()
 
     def __read_config_value(self, key) -> str:
         """
@@ -605,6 +570,45 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             ex.setParent(self, QtCore.Qt.Window)
             ex.show()
         return
+
+    def __setup_file_manager_tree_view_info(self) -> None:
+        info = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
+        self.__file_manager__tree_view_model = QtGui.QStandardItemModel(self)
+        self.__file_manager__tree_view_model.setHorizontalHeaderLabels(['project', 'folder', 'name', 'extension', 'dir'])
+        if info:
+            project_list = info[0]
+            project_folder_list = info[1]
+            project_file_name_list = info[2]
+
+            for i in range(0, len(project_list)):
+
+                item_project = QtGui.QStandardItem(project_list[i])
+                self.__file_manager__tree_view_model.appendRow(item_project)
+                self.__file_manager__tree_view_model.setItem(i, 1, QtGui.QStandardItem(''))
+
+                for j in range(0, len(project_folder_list)):
+
+                    folder_project_name = project_folder_list[j]['project_name']
+
+                    if folder_project_name == project_list[i]:
+                        item_folder = QtGui.QStandardItem(project_folder_list[j]['folder_name'])
+                        item_project.appendRow(item_folder)
+                        # item_project.setChild(j, 2, QtGui.QStandardItem('Folder info'))
+
+                        for k in range(0, len(project_file_name_list)):
+
+                            file_folder_name = project_file_name_list[k]['folder_name']
+
+                            if file_folder_name == project_folder_list[j]['folder_name']:
+                                item_file = QtGui.QStandardItem(project_file_name_list[k]['file_name'])
+                                item_folder.appendRow(item_file)
+
+            tree_view = self.__file_manager_tree_view_widget
+            tree_view.setModel(self.__file_manager__tree_view_model)
+            tree_view.header().resizeSection(0, 160)
+            tree_view.setStyle(QtWidgets.QStyleFactory.create('windows'))
+            tree_view.expandAll()
+
 
     def keyPressEvent(self, event) -> None:
         """
