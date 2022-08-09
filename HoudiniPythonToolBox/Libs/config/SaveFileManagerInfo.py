@@ -125,15 +125,17 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.setup_combox_value()
 
     def setup_combox_value(self) -> None:
-        all_file_info = self.load_file_info_from_json_file()
+        all_info_list = self.load_file_info_from_json_file()
         project_list = []
         folder_list = []
         file_type_list = []
-        for info in all_file_info:
-            if info:
-                project_list.append(info['project_name'])
-                folder_list.append(info['folder_name'])
-                file_type_list.append(info['file_type'])
+        for info in all_info_list:
+            project_list.append(info['project_name'])
+            for folder in info['folder']:
+                folder_list.append(folder['folder_name'])
+                file_info = folder['file_info']
+                for i in range(0, len(file_info['file_name'])):
+                    file_type_list.append(folder['file_info']['file_type'][i])
         project_list = list(set(project_list))
         folder_list = list(set(folder_list))
         file_type_list = list(set(file_type_list))
@@ -143,6 +145,7 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
             self.folder_choose_combo_box.addItem(f)
         for t in file_type_list:
             self.file_type_choose_combo_box.addItem(t)
+
 
     def on_project_combo_box_changed(self) -> None:
         self.project_choose_line_edit.setText(self.project_choose_combo_box.currentText())
@@ -155,23 +158,56 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
 
     def save_file_info_to_json_file(self) -> None:
         path = tool_path_manager.file_manager_preset_path
-        item_dict = {
-            "project_name": self.project_choose_line_edit.text(),
-            "folder_name": self.folder_choose_line_edit.text(),
-            "file_name": self.file_name_line_edit.text(),
-            "file_dir": self.file_dir_line_edit.text(),
-            "file_type": self.file_type_line_edit.text(),
-            "file_marker": self.file_remark_line_edit.text()
+
+        file_info_dict = {
+            'file_name': [self.file_name_line_edit.text()],
+            'file_dir': [self.file_dir_line_edit.text()],
+            'file_type': [self.file_type_line_edit.text()],
+            'file_marker': [self.file_remark_line_edit.text()]
         }
+        folder_name_dict = {'folder_name': self.folder_choose_line_edit.text(), 'file_info': file_info_dict}
+        folder_dict = [folder_name_dict]
+        project_dict = {'project_name': self.project_choose_line_edit.text(), 'folder': folder_dict}
         info_list = tool_config_manager.load_json_file_info_by_path(path)
-        if info_list:
-            info_list['file_info'].append(item_dict)
-            tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
+        need_add_project_flag = True
+        need_add_project_folder_flag = True
+        for info in info_list['project']:
+            if info['project_name'] == self.project_choose_line_edit.text():
+                need_add_project_flag = False
+                for folder in info['folder']:
+                    if folder['folder_name'] == self.folder_choose_line_edit.text():
+                        need_add_project_folder_flag = False
+                        file_info = folder['file_info']
+                        for i in range(0, len(file_info['file_name'])):
+                            if file_info['file_name'][i] == self.file_name_line_edit.text():
+                                result = QtWidgets.QMessageBox.warning(self, "replace",
+                                                                       "have same name file ,"
+                                                                       " are you sure to replace?",
+                                                                       QtWidgets.QMessageBox.Yes |
+                                                                       QtWidgets.QMessageBox.No)
+                                if result == QtWidgets.QMessageBox.Yes:
+                                    file_info['file_name'][i] = self.file_name_line_edit.text()
+                                    file_info['file_dir'][i] = self.file_dir_line_edit.text()
+                                    file_info['file_type'][i] = self.file_type_line_edit.text(),
+                                    file_info['file_marker'][i] = self.file_remark_line_edit.text()
+                            else:
+                                file_info['file_name'].append(self.file_name_line_edit.text())
+                                file_info['file_dir'].append(self.file_dir_line_edit.text())
+                                file_info['file_type'].append(self.file_type_line_edit.text())
+                                file_info['file_marker'].append(self.file_remark_line_edit.text())
+
+        if need_add_project_folder_flag:
+            for info in info_list['project']:
+                if info['project_name'] == self.project_choose_line_edit.text():
+                    info['folder'].append(folder_name_dict)
+        if need_add_project_flag:
+            info_list['project'].append(project_dict)
+
+        tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
 
     @classmethod
-    def load_file_info_from_json_file(cls) -> list:
+    def load_file_info_from_json_file(cls) -> str:
         path = tool_path_manager.file_manager_preset_path
         info_list = tool_config_manager.load_json_file_info_by_path(path)
-        all_file_info = info_list['file_info']
+        all_file_info = info_list['project']
         return all_file_info
-
