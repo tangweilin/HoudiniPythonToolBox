@@ -572,42 +572,67 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         return
 
     def __setup_file_manager_tree_view_info(self) -> None:
-        info = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
-        self.__file_manager__tree_view_model = QtGui.QStandardItemModel(self)
-        self.__file_manager__tree_view_model.setHorizontalHeaderLabels(['project', 'folder', 'name', 'extension', 'dir'])
-        if info:
-            project_list = info[0]
-            project_folder_list = info[1]
-            project_file_name_list = info[2]
+        all_file_info = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
+        project_list = []
+        folder_list = []
+        file_list = []
 
-            for i in range(0, len(project_list)):
+        model = self.__file_manager__tree_view_model
+        model.setHorizontalHeaderLabels(['file', 'file_type', 'file_marker', 'file_dir'])
+        for info in all_file_info:
+            if len(model.findItems(info['project_name'])) == 0:
+                item_project = QtGui.QStandardItem(info['project_name'])
+                project_list.append(info['project_name'])
+                model.appendRow(item_project)
 
-                item_project = QtGui.QStandardItem(project_list[i])
-                self.__file_manager__tree_view_model.appendRow(item_project)
-                self.__file_manager__tree_view_model.setItem(i, 1, QtGui.QStandardItem(''))
+        for info in all_file_info:
+            if len(model.findItems(info['project_name'])) != 0:
+                item_folder = QtGui.QStandardItem(info['folder_name'])
+                project_item = model.findItems(info['project_name'])[0]
+                project_item.appendRow(item_folder)
+                folder_list.append(info['folder_name'])
 
-                for j in range(0, len(project_folder_list)):
+        for info in all_file_info:
+            if len(model.findItems(info['project_name'])) != 0:
+                project_item = model.findItems(info['project_name'])[0]
+                if project_item:
+                    for i in range(0, project_item.rowCount()):
+                        folder_obj = project_item.child(i)
+                        folder_text = folder_obj.text()
+                        if info['folder_name'] == folder_text:
+                            item_file = QtGui.QStandardItem(info['file_name'])
+                            item_file_type = QtGui.QStandardItem(info['file_type'])
+                            item_file_marker = QtGui.QStandardItem(info['file_type'])
+                            item_file_dir = QtGui.QStandardItem(info['file_dir'])
+                            folder_obj.appendRow(item_file)
+                            folder_obj.setChild(item_file.index().row(), 1, item_file_type)
+                            folder_obj.setChild(item_file.index().row(), 2, item_file_marker)
+                            folder_obj.setChild(item_file.index().row(), 3, item_file_dir)
+                            file_list.append(info['file_name'])
 
-                    folder_project_name = project_folder_list[j]['project_name']
+        tree_view = self.__file_manager_tree_view_widget
+        tree_view.setModel(self.__file_manager__tree_view_model)
+        tree_view.header().resizeSection(0, 160)
+        tree_view.setStyle(QtWidgets.QStyleFactory.create('windows'))
+        tree_view.expandAll()
+        tree_view.selectionModel().currentChanged.connect(self.onCurrentChanged)
 
-                    if folder_project_name == project_list[i]:
-                        item_folder = QtGui.QStandardItem(project_folder_list[j]['folder_name'])
-                        item_project.appendRow(item_folder)
-                        # item_project.setChild(j, 2, QtGui.QStandardItem('Folder info'))
+    def onCurrentChanged(self, current, previous):
+        txt = '父级:[{}] '.format(str(current.parent().data()))
+        txt += '当前选中:[(行{},列{})] '.format(current.row(), current.column())
 
-                        for k in range(0, len(project_file_name_list)):
+        name = ''
+        info = ''
+        if current.column() == 0:
+            name = str(current.data())
+            info = str(current.sibling(current.row(), 1).data())
+        else:
+            name = str(current.sibling(current.row(), 0).data())
+            info = str(current.data())
 
-                            file_folder_name = project_file_name_list[k]['folder_name']
+        txt += '名称:[{}]  信息:[{}]'.format(name, info)
 
-                            if file_folder_name == project_folder_list[j]['folder_name']:
-                                item_file = QtGui.QStandardItem(project_file_name_list[k]['file_name'])
-                                item_folder.appendRow(item_file)
-
-            tree_view = self.__file_manager_tree_view_widget
-            tree_view.setModel(self.__file_manager__tree_view_model)
-            tree_view.header().resizeSection(0, 160)
-            tree_view.setStyle(QtWidgets.QStyleFactory.create('windows'))
-            tree_view.expandAll()
+        self.statusBar().showMessage(txt)
 
 
     def keyPressEvent(self, event) -> None:
