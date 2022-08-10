@@ -1,6 +1,6 @@
 import sys
 import os
-
+from pathlib import  Path
 
 class ToolPath:
     """
@@ -160,6 +160,32 @@ class ToolPath:
                     result_path = path
                 return result_path
 
+    @classmethod
+    def get_path_file_name(cls, path) -> str:
+        path_str = Path(path)
+        path_file_name = path_str.name
+        return path_file_name
 
+    @classmethod
+    def get_parent_path(cls, path) -> Path:
+        path_str = Path(path)
+        path_parent_path = path_str.parent
+        return path_parent_path
 
+    @classmethod
+    def get_file_suffix(cls, path) -> str:
+        path_str = Path(path)
+        path_suffix = path_str.suffix
+        return path_suffix
 
+    @classmethod
+    def change_file_suffix(cls, path, suffix) -> Path:
+        path_str = Path(path)
+        path_suffix = path_str.with_suffix(suffix)
+        return path_suffix
+
+    @classmethod
+    def join_file_path(cls, path, file_name) -> Path:
+        path_str = Path(path)
+        path_str_join = path_str.joinpath(file_name)
+        return path_str_join
