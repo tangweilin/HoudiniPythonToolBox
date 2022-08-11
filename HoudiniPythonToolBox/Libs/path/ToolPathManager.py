@@ -161,6 +161,10 @@ class ToolPath:
                 return result_path
 
     @classmethod
+    def get_dir_by_dialog_window(cls) -> str:
+        app
+
+    @classmethod
     def get_path_file_name(cls, path) -> str:
         path_str = Path(path)
         path_file_name = path_str.name

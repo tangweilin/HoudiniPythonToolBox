@@ -365,19 +365,16 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         file_manager_main_h_layout = QtWidgets.QHBoxLayout(self.__file_manager_tab)
 
         self.__file_manager_tab_add_btn = QtWidgets.QPushButton('add')
-        self.__file_manager_tab_import_btn = QtWidgets.QPushButton('import/open')
         self.__file_manager_tab_update_btn = QtWidgets.QPushButton('update')
         self.__file_manager_tab_delete_btn = QtWidgets.QPushButton('delete')
 
         tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_add_btn, 'add_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_import_btn, 'import_btn', None)
         tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_update_btn, 'update_btn', None)
         tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_delete_btn, 'delete_btn', None)
 
         self.__file_manager_tab_add_btn.clicked.connect(self.__on_file_manager_tab_add_btn_clicked)
 
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_add_btn)
-        file_manager_main_h_layout.addWidget(self.__file_manager_tab_import_btn)
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_update_btn)
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_delete_btn)
 
