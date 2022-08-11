@@ -1,1 +1,44 @@
-{"file_info": [{"project_name": "project_t", "folder_name": "building", "file_name": "test_file_name", "file_dir": "test_file_dir", "file_type": "obj", "file_marker": "test_file_marker"}, {"project_name": "project_t", "folder_name": "roads", "file_name": "test_file_name_1", "file_dir": "test_file_dir_1", "file_type": "hip", "file_marker": "test_file_marker_1"}, {"project_name": "project_w", "folder_name": "light", "file_name": "ffffff", "file_dir": "dddddd", "file_type": "fbx", "file_marker": "nnnnnn"}, {"project_name": "project_t", "folder_name": "building", "file_name": "test_file_name_1", "file_dir": "test_file_dir_1", "file_type": "obj", "file_marker": "test_file_marker_1"}]}
+{
+  "project": [
+    {
+      "project_name": "ZL",
+      "folder": [
+        {
+          "folder_name": "Sigmar",
+          "file_info": {
+            "file_name": [
+            ],
+            "file_dir": [
+            ],
+            "file_type": [
+            ],
+            "file_marker": [
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "project_name": "Home",
+      "folder": [
+        {
+          "folder_name": "git",
+          "file_info": {
+            "file_name": [
+              "git_file"
+            ],
+            "file_dir": [
+              "D:\\Git_Project"
+            ],
+            "file_type": [
+              "None"
+            ],
+            "file_marker": [
+              "Home Git Project Path"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
