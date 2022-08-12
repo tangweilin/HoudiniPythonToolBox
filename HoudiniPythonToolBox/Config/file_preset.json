@@ -6,14 +6,10 @@
         {
           "folder_name": "Sigmar",
           "file_info": {
-            "file_name": [
-            ],
-            "file_dir": [
-            ],
-            "file_type": [
-            ],
-            "file_marker": [
-            ]
+            "file_name": [],
+            "file_dir": [],
+            "file_type": [],
+            "file_marker": []
           }
         }
       ]
@@ -35,6 +31,28 @@
             ],
             "file_marker": [
               "Home Git Project Path"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "project_name": "Exercise",
+      "folder": [
+        {
+          "folder_name": "KineFx",
+          "file_info": {
+            "file_name": [
+              "test_kine_fx"
+            ],
+            "file_dir": [
+              "D:\\HoudiniProjects\\KineFx\\test_kine_fx.hip"
+            ],
+            "file_type": [
+              "hip"
+            ],
+            "file_marker": [
+              "kine_fx_exercise"
             ]
           }
         }

@@ -25,6 +25,7 @@ tool_path_manager = ToolPathManager.ToolPath()
 tool_config_manager = ToolConfigManager.ToolConfig()
 tool_widget_utility_func = ToolUtilityClasses.SetWidgetInfo
 tool_hou_node_utility_func = ToolUtilityClasses.HouNodesUtilities
+too_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass()
 
 
 class HoudiniPythonTools(QtWidgets.QMainWindow):
@@ -52,6 +53,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.setWindowTitle(tool_name + '_Houdini_' + "_toolbox_" + 'v1.0')
         self.setMaximumSize(QtCore.QSize(1100, 830))
         self.statusBar()
+
+        self.__current_file_manager_file_dir = None
+        self.__current_hip_file_path_from_file_manager = None
 
         # main toolbar widgets
         self.__setup_tool_bar_widget_layout()
@@ -382,6 +386,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         file_manager_main_v_layout.addLayout(file_manager_main_h_layout)
         file_manager_main_v_layout.addWidget(self.__file_manager_tree_view_widget)
+
+        # contex menu
+        self.__file_manager_tree_view_widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.__file_manager_tree_view_widget.customContextMenuRequested.connect(self.open_context_menu)
+
         self.__setup_file_manager_tree_view_info()
 
     def __read_config_value(self, key) -> str:
@@ -572,50 +581,6 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         return
 
     def __setup_file_manager_tree_view_info(self) -> None:
-        # all_file_info = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
-        # project_list = []
-        # folder_list = []
-        # file_list = []
-        #
-        # model = self.__file_manager__tree_view_model
-        # model.setHorizontalHeaderLabels(['file', 'file_type', 'file_marker', 'file_dir'])
-        # for info in all_file_info:
-        #     if len(model.findItems(info['project_name'])) == 0:
-        #         item_project = QtGui.QStandardItem(info['project_name'])
-        #         project_list.append(info['project_name'])
-        #         model.appendRow(item_project)
-        #
-        # for info in all_file_info:
-        #     if len(model.findItems(info['project_name'])) != 0:
-        #         item_folder = QtGui.QStandardItem(info['folder_name'])
-        #         project_item = model.findItems(info['project_name'])[0]
-        #         project_item.appendRow(item_folder)
-        #         folder_list.append(info['folder_name'])
-        #
-        # for info in all_file_info:
-        #     if len(model.findItems(info['project_name'])) != 0:
-        #         project_item = model.findItems(info['project_name'])[0]
-        #         if project_item:
-        #             for i in range(0, project_item.rowCount()):
-        #                 folder_obj = project_item.child(i)
-        #                 folder_text = folder_obj.text()
-        #                 if info['folder_name'] == folder_text:
-        #                     item_file = QtGui.QStandardItem(info['file_name'])
-        #                     item_file_type = QtGui.QStandardItem(info['file_type'])
-        #                     item_file_marker = QtGui.QStandardItem(info['file_type'])
-        #                     item_file_dir = QtGui.QStandardItem(info['file_dir'])
-        #                     folder_obj.appendRow(item_file)
-        #                     folder_obj.setChild(item_file.index().row(), 1, item_file_type)
-        #                     folder_obj.setChild(item_file.index().row(), 2, item_file_marker)
-        #                     folder_obj.setChild(item_file.index().row(), 3, item_file_dir)
-        #                     file_list.append(info['file_name'])
-        #
-        # tree_view = self.__file_manager_tree_view_widget
-        # tree_view.setModel(self.__file_manager__tree_view_model)
-        # tree_view.header().resizeSection(0, 160)
-        # tree_view.setStyle(QtWidgets.QStyleFactory.create('windows'))
-        # tree_view.expandAll()
-        # tree_view.selectionModel().currentChanged.connect(self.onCurrentChanged)
         all_info_list = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
         model = self.__file_manager__tree_view_model
         model.setHorizontalHeaderLabels(['file', 'file_type', 'file_marker', 'file_dir'])
@@ -644,24 +609,66 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         tree_view.setModel(self.__file_manager__tree_view_model)
         tree_view.header().resizeSection(0, 160)
         tree_view.setStyle(QtWidgets.QStyleFactory.create('windows'))
+        tree_view.selectionModel().currentChanged.connect(self.__on_current_tree_view_change)
         tree_view.expandAll()
 
-    def onCurrentChanged(self, current, previous):
+    def __on_current_tree_view_change(self, current, previous):
         txt = '父级:[{}] '.format(str(current.parent().data()))
         txt += '当前选中:[(行{},列{})] '.format(current.row(), current.column())
 
-        name = ''
-        info = ''
-        if current.column() == 0:
-            name = str(current.data())
-            info = str(current.sibling(current.row(), 1).data())
-        else:
-            name = str(current.sibling(current.row(), 0).data())
-            info = str(current.data())
 
-        txt += '名称:[{}]  信息:[{}]'.format(name, info)
+        dir_info = current.sibling(current.row(), 3).data()
+        type_info = current.sibling(current.row(), 1).data()
+        if dir_info is not None:
+            self.__current_file_manager_file_dir = dir_info
+            if type_info is not None:
+                info = str(type_info).lower()
+                if info == 'hip':
+                    self.__current_hip_file_path_from_file_manager = dir_info
+                else:
+                    self.__current_hip_file_path_from_file_manager = None
+            else:
+                self.__current_hip_file_path_from_file_manager = None
+        else:
+            self.__current_file_manager_file_dir = None
 
         self.statusBar().showMessage(txt)
+
+    def open_context_menu(self):
+        self.file_manager_tree_view_menu = QtWidgets.QMenu('Menu', self)
+
+        open_file_action = QtWidgets.QAction('open_file_location', self)
+        tool_widget_utility_func.set_widget_icon(open_file_action, 'open.png')
+        open_hip_action = QtWidgets.QAction('open_hip_file', self)
+        tool_widget_utility_func.set_widget_icon(open_hip_action, 'open_hip.png')
+        import_action = QtWidgets.QAction('import_to_hip_file', self)
+        tool_widget_utility_func.set_widget_icon(import_action, 'import.png')
+
+        open_file_action.triggered.connect(self.__on_menu_open_file_action)
+        open_hip_action.triggered.connect(self.__on_menu_open_hip_action)
+        import_action.triggered.connect(self.__on_menu_import_file_action)
+
+        self.file_manager_tree_view_menu.addAction(open_file_action)
+        self.file_manager_tree_view_menu.addAction(open_hip_action)
+        self.file_manager_tree_view_menu.addAction(import_action)
+
+        self.file_manager_tree_view_menu.exec_(QtGui.QCursor.pos())
+
+    def __on_menu_open_file_action(self) -> None:
+        file_dir = self.__current_file_manager_file_dir
+        if file_dir is not None:
+            if len(tool_path_manager.get_file_suffix(file_dir)):
+                file_dir = tool_path_manager.get_parent_path(file_dir)
+            os.startfile(file_dir)
+
+    def __on_menu_open_hip_action(self) -> None:
+        if self.__current_hip_file_path_from_file_manager is not None:
+            hou.hipFile.load(str(self.__current_hip_file_path_from_file_manager),
+                             suppress_save_prompt=True)
+
+    def __on_menu_import_file_action(self) -> None:
+
+        too_error_info.show_exception_info('warning', 'doing... try other function')
 
 
     def keyPressEvent(self, event) -> None:
