@@ -27,6 +27,7 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
 
     def __init__(self):
         super(SaveFileManagerInfo, self).__init__()
+        self.select_dir = None
         self.setGeometry(1200, 1200, 370, 400)
         tool_widget_utility_func.set_widget_to_center_desktop(self)
         self.setObjectName('SaveFileManagerInfo')
@@ -57,6 +58,9 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         tool_widget_utility_func.set_widget_icon(self.reset_btn, 'reset_node.png')
 
         self.save_btn.clicked.connect(self.save_file_info_to_json_file)
+        self.current_btn.clicked.connect(self.get_current_file_info)
+        self.multi_btn.clicked.connect(self.save_multi_file_info)
+        self.reset_btn.clicked.connect(self.reset_ui_preset_info)
 
         v_sub_layout = QtWidgets.QVBoxLayout()
 
@@ -146,7 +150,6 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         for t in file_type_list:
             self.file_type_choose_combo_box.addItem(t)
 
-
     def on_project_combo_box_changed(self) -> None:
         self.project_choose_line_edit.setText(self.project_choose_combo_box.currentText())
 
@@ -188,13 +191,16 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
                                 if result == QtWidgets.QMessageBox.Yes:
                                     file_info['file_name'][i] = self.file_name_line_edit.text()
                                     file_info['file_dir'][i] = self.file_dir_line_edit.text()
-                                    file_info['file_type'][i] = self.file_type_line_edit.text(),
+                                    file_info['file_type'][i] = self.file_type_line_edit.text()
                                     file_info['file_marker'][i] = self.file_remark_line_edit.text()
-                            else:
-                                file_info['file_name'].append(self.file_name_line_edit.text())
-                                file_info['file_dir'].append(self.file_dir_line_edit.text())
-                                file_info['file_type'].append(self.file_type_line_edit.text())
-                                file_info['file_marker'].append(self.file_remark_line_edit.text())
+                                    return
+                                else:
+                                    return
+
+                        file_info['file_name'].append(self.file_name_line_edit.text())
+                        file_info['file_dir'].append(self.file_dir_line_edit.text())
+                        file_info['file_type'].append(self.file_type_line_edit.text())
+                        file_info['file_marker'].append(self.file_remark_line_edit.text())
 
         if need_add_project_folder_flag:
             for info in info_list['project']:
@@ -204,6 +210,58 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
             info_list['project'].append(project_dict)
 
         tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
+
+    def get_current_file_info(self) -> None:
+        file_name = hou.hipFile.name()
+        file_path = hou.hipFile.path()
+        self.file_type_line_edit.setText('.hip')
+        self.file_name_line_edit.setText(file_name)
+        self.file_dir_line_edit.setText(file_path)
+        self.on_project_combo_box_changed()
+        self.on_file_type_combo_box_changed()
+        self.on_folder_combo_box_changed()
+
+    def save_multi_file_info(self) -> None:
+        file_dialog = QtWidgets.QFileDialog()
+        file_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        file_dialog.setFilter(QtCore.QDir.Files)
+        dir_temp = 'D:\Git_Project\HoudiniPythonToolBox\HoudiniPythonToolBox\Config'
+        self.select_dir, _ = file_dialog.getOpenFileNames(caption='choose files', dir=dir_temp)
+        if len(self.project_choose_line_edit.text()) == 0:
+            tool_error_info.show_exception_info('error', 'please choose or type project name')
+        else:
+            result = QtWidgets.QMessageBox.warning(self, "warning",
+                                                   "Use Current Folder Preset?",
+                                                   QtWidgets.QMessageBox.Yes |
+                                                   QtWidgets.QMessageBox.No)
+            if result == QtWidgets.QMessageBox.Yes:
+                if len(self.folder_choose_line_edit.text()) == 0:
+                    tool_error_info.show_exception_info('error', 'The Current Folder Preset Is None')
+                    print(len(self.select_dir))
+                for path in self.select_dir:
+
+                    file_name = tool_path_manager.get_path_file_name(path)
+                    file_dir = tool_path_manager.get_parent_path(path)
+                    file_type = tool_path_manager.get_file_suffix(path)
+                    self.file_type_line_edit.setText(file_type)
+                    self.file_name_line_edit.setText(file_name)
+                    self.file_dir_line_edit.setText(str(file_dir))
+                    self.save_file_info_to_json_file()
+
+    def reset_ui_preset_info(self) -> None:
+        self.file_type_line_edit.setText('')
+        self.file_name_line_edit.setText('')
+        self.file_dir_line_edit.setText('')
+        self.file_remark_line_edit.setText('')
+        self.project_choose_line_edit.setText('')
+        self.folder_choose_line_edit.setText('')
+
+    def update_current_index_info(self) -> None:
+        pass
+
+    def delete_current_index_info(self) -> None:
+        pass
+
 
     @classmethod
     def load_file_info_from_json_file(cls) -> str:

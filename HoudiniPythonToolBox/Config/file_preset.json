@@ -6,10 +6,10 @@
         {
           "folder_name": "Sigmar",
           "file_info": {
-            "file_name": [],
-            "file_dir": [],
-            "file_type": [],
-            "file_marker": []
+            "file_name": [""],
+            "file_dir": [""],
+            "file_type": [""],
+            "file_marker": [""]
           }
         }
       ]
