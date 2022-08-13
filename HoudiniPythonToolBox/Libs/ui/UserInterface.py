@@ -54,8 +54,13 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.setMaximumSize(QtCore.QSize(1100, 830))
         self.statusBar()
 
-        self.__current_file_manager_file_dir = None
+        self.current_select_file_dir = None
         self.__current_hip_file_path_from_file_manager = None
+        self.current_select_file_name = None
+        self.current_select_file_type = None
+        self.current_select_file_marker = None
+        self.current_select_file_folder = None
+        self.current_select_file_project = None
 
         # main toolbar widgets
         self.__setup_tool_bar_widget_layout()
@@ -373,6 +378,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_delete_btn, 'delete_btn', None)
 
         self.__file_manager_tab_add_btn.clicked.connect(self.__on_file_manager_tab_add_btn_clicked)
+        self.__file_manager_tab_update_btn.clicked.connect(self.__on_file_manager_tab_update_btn_clicked)
+        self.__file_manager_tab_delete_btn.clicked.connect(self.__on_file_manager_tab_delete_btn_clicked)
 
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_add_btn)
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_update_btn)
@@ -577,6 +584,33 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             ex.show()
         return
 
+    def __on_file_manager_tab_update_btn_clicked(self) -> None:
+        if self.current_select_file_name:
+            main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
+            sub_window = main_window.findChild(QtWidgets.QWidget, 'update_file_manager_info')
+            if sub_window is None:
+                ex = SaveFileManagerInfo.SaveFileManagerInfo()
+                ex.setParent(self, QtCore.Qt.Window)
+                ex.update_current_index_info(project_name=self.current_select_file_project,
+                                             folder_name=self.current_select_file_folder,
+                                             file_name=self.current_select_file_name,
+                                             file_type=self.current_select_file_type,
+                                             file_dir=self.current_select_file_dir,
+                                             file_marker=self.current_select_file_marker)
+                ex.show()
+        else:
+            too_error_info.show_exception_info('waring', 'please select filename')
+
+    def __on_file_manager_tab_delete_btn_clicked(self) -> None:
+        if self.current_select_file_name:
+            ex = SaveFileManagerInfo.SaveFileManagerInfo()
+            ex.delete_current_index_info(project_name=self.current_select_file_project,
+                                         folder_name=self.current_select_file_folder,
+                                         file_name=self.current_select_file_name,
+                                         file_dir=self.current_select_file_dir)
+        else:
+            too_error_info.show_exception_info('waring', 'please select filename')
+
     def __setup_file_manager_tree_view_info(self) -> None:
         all_info_list = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
         model = self.__file_manager__tree_view_model
@@ -603,31 +637,64 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                     item_folder.setChild(item_file.index().row(), 3, item_file_dir)
 
         tree_view = self.__file_manager_tree_view_widget
-        tree_view.setModel(self.__file_manager__tree_view_model)
+        tree_view.setModel(model)
         tree_view.header().resizeSection(0, 160)
         tree_view.setStyle(QtWidgets.QStyleFactory.create('windows'))
         tree_view.selectionModel().currentChanged.connect(self.__on_current_tree_view_change)
         tree_view.expandAll()
 
     def __on_current_tree_view_change(self, current, previous):
-        txt = '父级:[{}] '.format(str(current.parent().data()))
-        txt += '当前选中:[(行{},列{})] '.format(current.row(), current.column())
+
+        self.current_select_file_name_item = current.sibling(current.row(), 0)
+        self.current_select_file_name = self.current_select_file_name_item.data()
+
+        self.current_select_file_type_item = current.sibling(current.row(), 1)
+        self.current_select_file_type = self.current_select_file_type_item.data()
+
+        self.current_select_file_marker_item = current.sibling(current.row(), 2)
+        self.current_select_file_marker = self.current_select_file_marker_item.data()
+
+        self.current_select_file_dir_item = current.sibling(current.row(), 3)
+        self.current_select_file_dir = self.current_select_file_dir_item.data()
+
+        if self.current_select_file_dir:
+            self.current_select_file_folder_item = current.parent()
+            self.current_select_file_folder = self.current_select_file_folder_item.data()
+
+            self.current_select_file_project_item = current.parent().parent()
+            self.current_select_file_project = self.current_select_file_project_item.data()
+        else:
+            self.current_select_file_type = None
+            self.current_select_file_name = None
+            self.current_select_file_marker = None
+
+            if isinstance(current.parent(), QtGui.QStandardItemModel):
+                self.current_select_file_folder_item = current
+                self.current_select_file_folder = current.data()
+
+                self.current_select_file_project_item = current.parent()
+                self.current_select_file_project = current.parent().data()
+
+            else:
+                self.current_select_file_folder = None
+                self.current_select_file_project_item = current
+                self.current_select_file_project = current.data()
+                print(self.__file_manager_tree_view_widget.selectionModel().currentIndex())
 
 
-        dir_info = current.sibling(current.row(), 3).data()
-        type_info = current.sibling(current.row(), 1).data()
-        if dir_info is not None:
-            self.__current_file_manager_file_dir = dir_info
-            if type_info is not None:
-                info = str(type_info).lower()
-                if info == 'hip':
-                    self.__current_hip_file_path_from_file_manager = dir_info
-                else:
-                    self.__current_hip_file_path_from_file_manager = None
+        if self.current_select_file_type is not None:
+            info = str(self.current_select_file_type).lower()
+            if info == 'hip':
+                self.__current_hip_file_path_from_file_manager = self.current_select_file_dir
             else:
                 self.__current_hip_file_path_from_file_manager = None
         else:
-            self.__current_file_manager_file_dir = None
+            self.__current_hip_file_path_from_file_manager = None
+
+        txt = 'project:[{}] '.format(self.current_select_file_project)
+        txt += 'folder:[{}]'.format(self.current_select_file_folder)
+        txt += 'filename:[{}]'.format(self.current_select_file_name)
+        txt += 'filemarker:[{}]'.format(self.current_select_file_marker)
 
         self.statusBar().showMessage(txt)
 
@@ -652,7 +719,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.file_manager_tree_view_menu.exec_(QtGui.QCursor.pos())
 
     def __on_menu_open_file_action(self) -> None:
-        file_dir = self.__current_file_manager_file_dir
+        file_dir = self.current_select_file_dir
         if file_dir is not None:
             if len(tool_path_manager.get_file_suffix(file_dir)):
                 file_dir = tool_path_manager.get_parent_path(file_dir)
@@ -666,7 +733,6 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
     def __on_menu_import_file_action(self) -> None:
 
         too_error_info.show_exception_info('warning', 'doing... try other function')
-
 
     def keyPressEvent(self, event) -> None:
         """

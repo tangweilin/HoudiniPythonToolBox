@@ -256,10 +256,15 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.project_choose_line_edit.setText('')
         self.folder_choose_line_edit.setText('')
 
-    def update_current_index_info(self) -> None:
-        pass
+    def update_current_index_info(self, project_name, folder_name, file_name, file_type, file_dir, file_marker) -> None:
+        self.project_choose_line_edit.setText(project_name)
+        self.folder_choose_line_edit.setText(folder_name)
+        self.file_name_line_edit.setText(file_name)
+        self.file_type_line_edit.setText(file_type)
+        self.file_dir_line_edit.setText(file_dir)
+        self.file_remark_line_edit.setText(file_marker)
 
-    def delete_current_index_info(self) -> None:
+    def delete_current_index_info(self, project_name, folder_name, file_name, file_dir) -> None:
         pass
 
 
