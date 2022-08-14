@@ -227,26 +227,27 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         file_dialog.setFilter(QtCore.QDir.Files)
         dir_temp = 'D:\Git_Project\HoudiniPythonToolBox\HoudiniPythonToolBox\Config'
         self.select_dir, _ = file_dialog.getOpenFileNames(caption='choose files', dir=dir_temp)
-        if len(self.project_choose_line_edit.text()) == 0:
-            tool_error_info.show_exception_info('error', 'please choose or type project name')
-        else:
-            result = QtWidgets.QMessageBox.warning(self, "warning",
-                                                   "Use Current Folder Preset?",
-                                                   QtWidgets.QMessageBox.Yes |
-                                                   QtWidgets.QMessageBox.No)
-            if result == QtWidgets.QMessageBox.Yes:
-                if len(self.folder_choose_line_edit.text()) == 0:
-                    tool_error_info.show_exception_info('error', 'The Current Folder Preset Is None')
-                    print(len(self.select_dir))
-                for path in self.select_dir:
+        if self.select_dir:
+            if len(self.project_choose_line_edit.text()) == 0:
+                tool_error_info.show_exception_info('error', 'please choose or type project name')
+            else:
+                result = QtWidgets.QMessageBox.warning(self, "warning",
+                                                       "Use Current Folder Preset?",
+                                                       QtWidgets.QMessageBox.Yes |
+                                                       QtWidgets.QMessageBox.No)
+                if result == QtWidgets.QMessageBox.Yes:
+                    if len(self.folder_choose_line_edit.text()) == 0:
+                        tool_error_info.show_exception_info('error', 'The Current Folder Preset Is None')
+                        print(len(self.select_dir))
+                    for path in self.select_dir:
 
-                    file_name = tool_path_manager.get_path_file_name(path)
-                    file_dir = tool_path_manager.get_parent_path(path)
-                    file_type = tool_path_manager.get_file_suffix(path)
-                    self.file_type_line_edit.setText(file_type)
-                    self.file_name_line_edit.setText(file_name)
-                    self.file_dir_line_edit.setText(str(file_dir))
-                    self.save_file_info_to_json_file()
+                        file_name = tool_path_manager.get_path_file_name(path)
+                        file_dir = tool_path_manager.get_parent_path(path)
+                        file_type = tool_path_manager.get_file_suffix(path)
+                        self.file_type_line_edit.setText(file_type)
+                        self.file_name_line_edit.setText(file_name)
+                        self.file_dir_line_edit.setText(str(file_dir))
+                        self.save_file_info_to_json_file()
 
     def reset_ui_preset_info(self) -> None:
         self.file_type_line_edit.setText('')
@@ -265,8 +266,21 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.file_remark_line_edit.setText(file_marker)
 
     def delete_current_index_info(self, project_name, folder_name, file_name, file_dir) -> None:
-        pass
-
+        if file_name:
+            path = tool_path_manager.file_manager_preset_path
+            info_list = tool_config_manager.load_json_file_info_by_path(path)
+            for info in info_list['project']:
+                if info['project_name'] == project_name:
+                    for folder in info['folder']:
+                        if folder['folder_name'] == folder_name:
+                            file_info = folder['file_info']
+                            for i in range(0, len(file_info['file_name'])):
+                                if file_info['file_name'][i] == file_name:
+                                    file_info['file_name'].pop(i)
+                                    file_info['file_dir'].pop(i)
+                                    file_info['file_type'].pop(i)
+                                    file_info['file_marker'].pop(i)
+            tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
 
     @classmethod
     def load_file_info_from_json_file(cls) -> str:

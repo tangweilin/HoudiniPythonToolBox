@@ -8,17 +8,19 @@ from PySide2.QtWidgets import QDesktopWidget
 
 from Libs.path import ToolPathManager
 from Libs.config import ToolConfigManager
-from Libs.ui import CustomLabel
-from Libs.config import SaveVexPyNodeInfo, SaveNodePresetInfo, SaveFileManagerInfo
+from Libs.ui import CustomLabel, CustomButton
+from Libs.config import SaveVexPyNodeInfo, SaveNodePresetInfo, SaveFileManagerInfo, SaveCommonToolNodeInfo
 from Libs.utilities import ToolUtilityClasses
 from imp import reload
 
 reload(ToolPathManager)
 reload(ToolConfigManager)
 reload(CustomLabel)
+reload(CustomButton)
 reload(SaveVexPyNodeInfo)
 reload(SaveNodePresetInfo)
 reload(SaveFileManagerInfo)
+reload(SaveCommonToolNodeInfo)
 reload(ToolUtilityClasses)
 
 tool_path_manager = ToolPathManager.ToolPath()
@@ -62,6 +64,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.current_select_file_folder = None
         self.current_select_file_project = None
 
+        self.button_type_list = ['Common', 'Obj', 'Sop', 'Dop', 'Top', 'Kine_fx', 'Solaris']
+
         # main toolbar widgets
         self.__setup_tool_bar_widget_layout()
 
@@ -79,6 +83,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         # file manager tab main layout
         self.__setup_file_manager_tab_widget_layout()
+
+        # common tools btn main layout
+        self.__setup_common_tools_tab_widget_layout()
 
     def __setup_tool_bar_widget_layout(self) -> None:
         # toolbar
@@ -126,12 +133,12 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__refresh_toolbar_btn.setStatusTip('refresh hotkey:F5')
         tool_bar.addWidget(self.__refresh_toolbar_btn)
 
-        # tab node add btn
-        self.__add_tab_node_btn = QtWidgets.QToolButton(tool_bar)
-        tool_widget_utility_func.set_widget_icon(self.__add_tab_node_btn, 'add_tab_node.png', tool_bar_btn_size)
-        self.__add_tab_node_btn.clicked.connect(self.__on_add_tab_node_btn_clicked)
-        self.__add_tab_node_btn.setStatusTip('create a new tab node')
-        tool_bar.addWidget(self.__add_tab_node_btn)
+        # common tool btn node add btn
+        self.__common_tool_node_add_btn = QtWidgets.QToolButton(tool_bar)
+        tool_widget_utility_func.set_widget_icon(self.__common_tool_node_add_btn, 'add_tab_node.png', tool_bar_btn_size)
+        self.__common_tool_node_add_btn.clicked.connect(self.__common_tool_node_add_btn_clicked)
+        self.__common_tool_node_add_btn.setStatusTip('create a new tab node')
+        tool_bar.addWidget(self.__common_tool_node_add_btn)
 
     def __setup_main_tab_widget_layout(self) -> None:
 
@@ -139,34 +146,12 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         main_v_layout.setContentsMargins(1, 1, 1, 1)
 
         # modify tab widgets
-        modify_tab_btn_size = QtCore.QSize(30, 30)
         modify_tab_h_layout = QtWidgets.QHBoxLayout()
-
-        # tab line edit
-        self.__line_edit_tab_name = QtWidgets.QLineEdit(self.__main_widget)
-        self.__line_edit_tab_name.setMaximumSize(QtCore.QSize(1100, 30))
-        self.__line_edit_tab_name.setPlaceholderText('newTabName')
-        self.__line_edit_tab_name.setStatusTip('the name of new tab')
-        self.__line_edit_tab_name.setContentsMargins(10, 6, 2, 2)
-
-        modify_tab_h_layout.addWidget(self.__line_edit_tab_name)
-
-        # tab add btn
-        self.__add_tab_btn = QtWidgets.QPushButton(self.__main_widget)
-        tool_widget_utility_func.set_widget_icon(self.__add_tab_btn, 'add_tab.png', modify_tab_btn_size)
-        self.__add_tab_btn.clicked.connect(self.__on_add_tab_btn_clicked)
-        modify_tab_h_layout.addWidget(self.__add_tab_btn)
-
-        # tab del btn
-        self.__del_tab_btn = QtWidgets.QPushButton(self.__main_widget)
-        tool_widget_utility_func.set_widget_icon(self.__del_tab_btn, 'del_tab.png', modify_tab_btn_size)
-        self.__del_tab_btn.clicked.connect(self.__on_del_tab_btn_clicked)
-        modify_tab_h_layout.addWidget(self.__del_tab_btn)
 
         # tab filter line edit
         self.__line_edit_filter = QtWidgets.QLineEdit()
         self.__line_edit_filter.setPlaceholderText('filter searching tab node by name')
-        self.__line_edit_filter.setMaximumSize(QtCore.QSize(1100, 30))
+        self.__line_edit_filter.setMaximumSize(QtCore.QSize(1100, 50))
         self.__line_edit_filter.setStatusTip('type key words to search')
         self.__line_edit_filter.textChanged.connect(self.__on_filter_tab_edit_changed)
 
@@ -180,13 +165,13 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         # add sub tab to main tab
         self.__vex_py_tab = QtWidgets.QWidget()
         self.__node_preset_tab = QtWidgets.QWidget()
-        self.__sop_tab = QtWidgets.QWidget()
+        self.__common_tools_tab = QtWidgets.QWidget()
         self.__file_manager_tab = QtWidgets.QWidget()
         self.__hda_tab = QtWidgets.QWidget()
         self.__main_tab_widget.addTab(self.__vex_py_tab, 'code_presets')
         self.__main_tab_widget.addTab(self.__node_preset_tab, 'node_presets')
         self.__main_tab_widget.addTab(self.__hda_tab, 'hda_presets')
-        self.__main_tab_widget.addTab(self.__sop_tab, 'common_tools')
+        self.__main_tab_widget.addTab(self.__common_tools_tab, 'common_tools')
         self.__main_tab_widget.addTab(self.__file_manager_tab, 'file_manager')
         self.__main_tab_list = ['code_presets', 'node_presets', 'hda_presets', 'common_tools',
                                 'file_manager']
@@ -397,6 +382,103 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         self.__setup_file_manager_tree_view_info()
 
+    def __setup_common_tools_tab_widget_layout(self) -> None:
+        common_tool_main_v_layout = QtWidgets.QVBoxLayout(self.__common_tools_tab)
+
+        self.__common_tool_btn_type_combo_box = QtWidgets.QComboBox()
+        for btn in self.button_type_list:
+            self.__common_tool_btn_type_combo_box.addItem(btn)
+        self.__common_tool_btn_type_combo_box.currentIndexChanged.connect(self.__create_common_tools_btn)
+
+        common_tools_grid_layout = QtWidgets.QGridLayout()
+        common_tools_grid_layout.setContentsMargins(0, 0, 0, 0)
+        common_tools_scroll_area = QtWidgets.QScrollArea()
+        common_tools_scroll_area.setAutoFillBackground(True)
+        common_tools_scroll_area.setWidgetResizable(True)
+        common_tools_grid_layout.addWidget(common_tools_scroll_area)
+
+        common_tools_scroll_area_content_widget = QtWidgets.QWidget()
+        self.layout = QtWidgets.QGridLayout(common_tools_scroll_area_content_widget)
+        common_tools_scroll_area.setWidget(common_tools_scroll_area_content_widget)
+
+        common_tool_main_v_layout.addWidget(self.__common_tool_btn_type_combo_box)
+        common_tool_main_v_layout.addLayout(common_tools_grid_layout)
+
+        self.__create_common_tools_btn()
+
+    def __create_common_tools_btn(self):
+        btn_type = self.__common_tool_btn_type_combo_box.currentText()
+
+        btn_name_dict = None
+        btn_name_list_path = tool_path_manager.common_tools_btn_name_list_path
+        btn_preset_path = tool_path_manager.common_tools_path
+        with open(btn_name_list_path, 'r') as f:
+            btn_name_dict = json.load(f)
+
+        all_btn_files = os.listdir(btn_preset_path)
+        btn_py_files = [x for x in all_btn_files if x.split('.')[-1].startswith('py')]
+
+        btn_row_number = 0
+        btn_colum_number = 0
+
+        self.btn_label_to_object_dict = {}
+
+        for file in btn_py_files:
+            if file.startswith(btn_type):
+                btn_info_name = file.split('.')[0] + '.json'
+                btn_tool_json_path = tool_path_manager.common_tools_path + '/' + btn_info_name
+                btn_info = None
+                try:
+                    with open(btn_tool_json_path, 'r') as f:
+                        btn_info = json.load(f)
+                except:
+                    too_error_info.show_exception_info('error', 'load {} file got wrong'.format(btn_info_name))
+                    print(btn_tool_json_path)
+                else:
+                    common_tool_btn = CustomButton.CustomButton()
+
+                    # json info
+                    btn_tool_tip = btn_info['tips']
+                    btn_label_name = btn_info['label_name']
+                    btn_object_name = btn_info['object_name']
+                    btn_icon_name = btn_info['icon_name']
+                    self.btn_label_to_object_dict[btn_label_name] = btn_type + '_' + btn_object_name
+
+                    # tool tip
+                    common_tool_btn.setStatusTip(btn_tool_tip)
+
+                    # icon
+                    icon_path = tool_path_manager.icon_path + '/' + btn_icon_name
+                    if not os.path.isfile(icon_path):
+                        btn_icon_name = 'common_tool'
+                    tool_widget_utility_func.set_widget_icon(common_tool_btn,btn_icon_name)
+
+                    common_tool_btn.setText(btn_label_name)
+                    common_tool_btn.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
+                    common_tool_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                    common_tool_btn.resize(QtCore.QSize(80, 80))
+                    common_tool_btn.setMinimumSize(QtCore.QSize(81, 68))
+                    common_tool_btn.setMaximumSize(QtCore.QSize(220, 85))
+                    common_tool_btn.setAutoRaise(True)
+
+                    common_tool_btn._leftClicked.connect(self.__common_btn_start_work)  # 不希望每次创建按钮的时候导入模块用到这句
+                    common_tool_btn._rightClicked.connect(self.__common_btn_delete)
+                    self.layout.addWidget(common_tool_btn, btn_colum_number, btn_row_number, 1, 1)
+                    btn_row_number += 1
+                    if btn_row_number % 4 == 0:
+                        btn_colum_number += 1
+                        btn_row_number = 0
+
+    def __common_btn_start_work(self):
+        btn_name = self.sender().text()
+        btn_code_module = self.btn_label_to_object_dict[btn_name]
+        exec('from Presets.CommonTools import ' + btn_code_module)
+        exec('reload(' + btn_code_module + ')')
+        exec(btn_code_module + '.start_work()')
+
+    def __common_btn_delete(self):
+        too_error_info.show_exception_info('warning', 'Doing')
+
     def __read_config_value(self, key) -> str:
         """
         :param key: the key of config
@@ -455,17 +537,16 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__file_location_toolbar_btn.setEnabled(True)
             self.__config_toolbar_btn.setEnabled(True)
 
-    def __on_add_tab_btn_clicked(self) -> None:
-        print('add tab btn clicked!')
-
-    def __on_del_tab_btn_clicked(self) -> None:
-        print('del tab btn clicked!')
-
     def __on_filter_tab_edit_changed(self) -> None:
         print('filter tab edit changed!')
 
-    def __on_add_tab_node_btn_clicked(self) -> None:
-        print('add tab node btn clicked!')
+    def __common_tool_node_add_btn_clicked(self) -> None:
+        main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
+        sub_window = main_window.findChild(QtWidgets.QWidget, 'add_common_tool_btn')
+        if sub_window is None:
+            ex = SaveCommonToolNodeInfo.SaveCommonToolNodeInfo()
+            ex.setParent(self, QtCore.Qt.Window)
+            ex.show()
 
     def __on_vex_py_tab_add_btn_clicked(self) -> None:
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
@@ -608,6 +689,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                                          folder_name=self.current_select_file_folder,
                                          file_name=self.current_select_file_name,
                                          file_dir=self.current_select_file_dir)
+            file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
+            row = file_name.index().row()
+            self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
         else:
             too_error_info.show_exception_info('waring', 'please select filename')
 
@@ -643,7 +727,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         tree_view.selectionModel().currentChanged.connect(self.__on_current_tree_view_change)
         tree_view.expandAll()
 
-    def __on_current_tree_view_change(self, current, previous):
+    def __on_current_tree_view_change(self, current):
 
         self.current_select_file_name_item = current.sibling(current.row(), 0)
         self.current_select_file_name = self.current_select_file_name_item.data()
@@ -668,7 +752,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.current_select_file_name = None
             self.current_select_file_marker = None
 
-            if isinstance(current.parent(), QtGui.QStandardItemModel):
+            if self.__file_manager__tree_view_model.itemFromIndex(current.parent()):
+
                 self.current_select_file_folder_item = current
                 self.current_select_file_folder = current.data()
 
@@ -676,11 +761,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                 self.current_select_file_project = current.parent().data()
 
             else:
+
                 self.current_select_file_folder = None
                 self.current_select_file_project_item = current
                 self.current_select_file_project = current.data()
-                print(self.__file_manager_tree_view_widget.selectionModel().currentIndex())
-
 
         if self.current_select_file_type is not None:
             info = str(self.current_select_file_type).lower()

@@ -1,20 +1,6 @@
 {
   "project": [
     {
-      "project_name": "ZL",
-      "folder": [
-        {
-          "folder_name": "Sigmar",
-          "file_info": {
-            "file_name": [""],
-            "file_dir": [""],
-            "file_type": [""],
-            "file_marker": [""]
-          }
-        }
-      ]
-    },
-    {
       "project_name": "Home",
       "folder": [
         {

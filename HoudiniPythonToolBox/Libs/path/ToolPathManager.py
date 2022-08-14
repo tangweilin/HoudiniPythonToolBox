@@ -14,6 +14,8 @@ class ToolPath:
         self.__config_path = self.__env_path + '/Config/tool_config.json'
         self.__code_preset_path = self.__env_path + '/Presets/CodePresets'
         self.__node_preset_path = self.__env_path + '/Presets/NodePresets'
+        self.__common_tools_path = self.__env_path + '/Presets/CommonTools'
+        self.__common_tools_btn_name_list_path = self.__common_tools_path + '/common_tool_btn_name_list.json'
         self.__vex_code_folder_path = self.__code_preset_path + '/VexCode'
         self.__python_code_folder_path = self.__code_preset_path + '/PythonCode'
         self.__hda_path = self.__env_path + '/Presets/HDAPresets'
@@ -71,6 +73,22 @@ class ToolPath:
         :return:  return node preset folder path
         """
         return self.__node_preset_path
+
+    @property
+    def common_tools_path(self) -> str:
+        """
+        ToolPathManager
+        :return:  return common tool preset folder path
+        """
+        return self.__common_tools_path
+
+    @property
+    def common_tools_btn_name_list_path(self) -> str:
+        """
+        ToolPathManager
+        :return:  return common tool btn list path
+        """
+        return self.__common_tools_btn_name_list_path
 
     @property
     def vex_node_preset_folder_path(self) -> str:
@@ -162,7 +180,7 @@ class ToolPath:
 
     @classmethod
     def get_dir_by_dialog_window(cls) -> str:
-        app
+        pass
 
     @classmethod
     def get_path_file_name(cls, path) -> str:
