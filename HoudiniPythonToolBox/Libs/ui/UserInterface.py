@@ -590,7 +590,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             Show Tool Help Doc
         :return:
         """
-        confluence_url='http://confluence.oa.zulong.com/display/EngineHub/Houdini+Python+Tools'
+        confluence_url = 'http://confluence.oa.zulong.com/display/EngineHub/Houdini+Python+Tools'
         webbrowser.open(confluence_url)
 
     def __on_scale_toolbar_btn_clicked(self) -> None:
@@ -855,17 +855,23 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             Delete Current Select File Info In File Manager Info Preset
         :return:
         """
+
         if self.current_select_file_name:
-            ex = SaveFileManagerInfo.SaveFileManagerInfo()
-            # remove item info from file
-            ex.delete_current_index_info(project_name=self.current_select_file_project,
-                                         folder_name=self.current_select_file_folder,
-                                         file_name=self.current_select_file_name,
-                                         file_dir=self.current_select_file_dir)
-            file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
-            row = file_name.index().row()
-            # remove item from tree view
-            self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
+            result = QtWidgets.QMessageBox.warning(self, "warning",
+                                                   "are you want to delete this file? ",
+                                                   QtWidgets.QMessageBox.Yes |
+                                                   QtWidgets.QMessageBox.No)
+            if result == QtWidgets.QMessageBox.Yes:
+                ex = SaveFileManagerInfo.SaveFileManagerInfo()
+                # remove item info from file
+                ex.delete_current_index_info(project_name=self.current_select_file_project,
+                                             folder_name=self.current_select_file_folder,
+                                             file_name=self.current_select_file_name,
+                                             file_dir=self.current_select_file_dir)
+                file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
+                row = file_name.index().row()
+                # remove item from tree view
+                self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
         else:
             tool_error_info.show_exception_info('waring', 'please select filename')
 
@@ -954,9 +960,27 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         if self.current_select_file_type is not None:
             info = str(self.current_select_file_type).lower()
+            hip_file = ['.hip', '.hiplc', '.hipnc']
+            if info.find('.') == -1:
+                info = '.' + info
 
-            if info == 'hip':
-                self.__current_hip_file_path_from_file_manager = self.current_select_file_dir
+            if info in hip_file:
+                if info in self.current_select_file_dir:
+                    self.__current_hip_file_path_from_file_manager = self.current_select_file_dir
+
+                elif self.current_select_file_dir.endswith(self.current_select_file_name):
+                    self.__current_hip_file_path_from_file_manager = self.current_select_file_dir + info
+
+                else:
+
+                    if self.current_select_file_name.find('.') == -1:
+
+                        self.__current_hip_file_path_from_file_manager = \
+                            self.current_select_file_dir + '\\' + self.current_select_file_name + info
+
+                    else:
+                        self.__current_hip_file_path_from_file_manager = \
+                            self.current_select_file_dir + '\\' + self.current_select_file_name
             else:
                 self.__current_hip_file_path_from_file_manager = None
         else:
@@ -1013,11 +1037,16 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         :return:
         """
         if self.__current_hip_file_path_from_file_manager is not None:
-            try:
-                hou.hipFile.load(str(self.__current_hip_file_path_from_file_manager),
-                                 suppress_save_prompt=True)
-            except:
-                tool_error_info.show_exception_info('error', 'open file got wrong, please check file is really exist')
+            result = QtWidgets.QMessageBox.warning(self, "warning",
+                                                   "are you want to open current file in this hou project? ",
+                                                   QtWidgets.QMessageBox.Yes |
+                                                   QtWidgets.QMessageBox.No)
+            if result == QtWidgets.QMessageBox.Yes:
+                try:
+                    hou.hipFile.load(str(self.__current_hip_file_path_from_file_manager),
+                                     suppress_save_prompt=True)
+                except:
+                    tool_error_info.show_exception_info('error', 'open file may got something wrong, please check file ')
 
     def __on_menu_import_file_action(self) -> None:
         """

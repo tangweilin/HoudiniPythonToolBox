@@ -64,16 +64,23 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
 
         v_sub_layout = QtWidgets.QVBoxLayout()
 
+        project_h_layout = QtWidgets.QHBoxLayout()
+        folder_h_layout = QtWidgets.QHBoxLayout()
+        type_h_layout = QtWidgets.QHBoxLayout()
+
+        project_choose_label = QtWidgets.QLabel('project_name:')
         self.project_choose_line_edit = QtWidgets.QLineEdit()
         self.project_choose_line_edit.setPlaceholderText('project name...')
         self.project_choose_combo_box = QtWidgets.QComboBox()
         self.project_choose_combo_box.currentIndexChanged.connect(self.on_project_combo_box_changed)
 
+        folder_choose_label = QtWidgets.QLabel('folders_name:')
         self.folder_choose_line_edit = QtWidgets.QLineEdit()
         self.folder_choose_line_edit.setPlaceholderText('folder name...')
         self.folder_choose_combo_box = QtWidgets.QComboBox()
         self.folder_choose_combo_box.currentIndexChanged.connect(self.on_folder_combo_box_changed)
 
+        file_type_label = QtWidgets.QLabel('file_extension:')
         self.file_type_line_edit = QtWidgets.QLineEdit()
         self.file_type_line_edit.setPlaceholderText('file type name...')
         self.file_type_choose_combo_box = QtWidgets.QComboBox()
@@ -111,11 +118,20 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         v_sub_layout.addLayout(file_name_h_layout)
         v_sub_layout.addLayout(file_dir_h_layout)
         v_sub_layout.addLayout(file_remark_h_layout)
-        v_sub_layout.addWidget(self.project_choose_line_edit)
+
+        project_h_layout.addWidget(project_choose_label)
+        project_h_layout.addWidget(self.project_choose_line_edit)
+        v_sub_layout.addLayout(project_h_layout)
         v_sub_layout.addWidget(self.project_choose_combo_box)
-        v_sub_layout.addWidget(self.folder_choose_line_edit)
+
+        folder_h_layout.addWidget(folder_choose_label)
+        folder_h_layout.addWidget(self.folder_choose_line_edit)
+        v_sub_layout.addLayout(folder_h_layout)
         v_sub_layout.addWidget(self.folder_choose_combo_box)
-        v_sub_layout.addWidget(self.file_type_line_edit)
+
+        type_h_layout.addWidget(file_type_label)
+        type_h_layout.addWidget(self.file_type_line_edit)
+        v_sub_layout.addLayout(type_h_layout)
         v_sub_layout.addWidget(self.file_type_choose_combo_box)
 
         h_layout.addWidget(self.save_btn)
@@ -211,6 +227,7 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
                                     file_info['file_dir'][i] = self.file_dir_line_edit.text()
                                     file_info['file_type'][i] = self.file_type_line_edit.text()
                                     file_info['file_marker'][i] = self.file_remark_line_edit.text()
+                                    tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
                                     return
                                 else:
                                     return
@@ -297,6 +314,7 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.project_choose_line_edit.setText(project_name)
         self.folder_choose_line_edit.setText(folder_name)
         self.file_name_line_edit.setText(file_name)
+        self.file_name_line_edit.setReadOnly(True)
         self.file_type_line_edit.setText(file_type)
         self.file_dir_line_edit.setText(file_dir)
         self.file_remark_line_edit.setText(file_marker)
