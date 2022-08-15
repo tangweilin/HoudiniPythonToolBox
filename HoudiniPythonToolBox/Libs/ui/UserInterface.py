@@ -10,6 +10,7 @@ from Libs.config import ToolConfigManager
 from Libs.path import ToolPathManager
 from Libs.ui import CustomLabel, CustomButton
 from Libs.utilities import ToolUtilityClasses
+import webbrowser
 
 reload(ToolPathManager)
 reload(ToolConfigManager)
@@ -589,7 +590,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             Show Tool Help Doc
         :return:
         """
-        tool_error_info.show_exception_info('abort', 'this tool is not done yet, please use other tool button')
+        confluence_url='http://confluence.oa.zulong.com/display/EngineHub/Houdini+Python+Tools'
+        webbrowser.open(confluence_url)
 
     def __on_scale_toolbar_btn_clicked(self) -> None:
         """
