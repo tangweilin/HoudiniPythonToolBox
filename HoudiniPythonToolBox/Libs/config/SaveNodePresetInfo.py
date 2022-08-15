@@ -88,6 +88,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         remark_h_layout.addWidget(remark_label)
         remark_h_layout.addWidget(self.remark_text_line_edit)
 
+        # layout
         h_layout.addWidget(self.save_btn)
         h_layout.addWidget(self.reset_btn)
         v_layout.addLayout(h_layout)
@@ -108,6 +109,8 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
             node_category_prefix = None
             parent_node = node.parent()
             name = self.node_name_line_edit.text().rstrip()
+
+            # get current node type
             if name:
                 if node_category_name == 'Object':
                     node_category_prefix = 'obj'
@@ -139,15 +142,12 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                 hip_files = [x for x in all_files if x.split('.')[-1].startswith('nodepresets')]
                 files = [x for x in hip_files if x.split('_')[0].lower().startswith(node_category_prefix)]
                 num = len(files)
-                strnum = str(num + 1).zfill(3)
-                if re.match(r'\d\d\d\_', name):
-                    file_name = node_category_prefix + '_' + name
-                else:
-                    file_name = node_category_prefix + '_' + strnum + '_' + name
+                file_name = node_category_prefix + '_' + name
 
                 file_full_path = node_preset_path + '/' + file_name + '.nodepresets'
                 info_full_path = node_preset_path + '/' + file_name + '.json'
                 all_info = {'author': author, 'remark': remark}
+                # replace
                 if file_name + '.nodepreset' in files:
                     reply = QtWidgets.QMessageBox.warning(self, "replace",
                                                           "have same file , are you sure to replace?",
@@ -158,6 +158,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                             json.dump(all_info, f)
 
                         self.close()
+                        # custom screen shot
                         shot = ScreenShotTool.ScreenShotTool(file_name, node_preset_path)
                         shot.show()
                 else:
@@ -165,6 +166,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                     with open(info_full_path, 'w') as f:
                         json.dump(all_info, f)
                     self.close()
+                    # custom screen shot
                     shot = ScreenShotTool.ScreenShotTool(file_name, node_preset_path)
                     shot.show()
 

@@ -7,11 +7,13 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 
-
 import sys
 
 
 class ScreenShotTool(QWidget):
+    """
+        Custom Screen Shot
+    """
 
     def __init__(self, name, path, parent=None):
         super(ScreenShotTool, self).__init__(parent)
@@ -29,10 +31,13 @@ class ScreenShotTool(QWidget):
         self.end_point = QPoint()
         self.name = name
         self.path = path
-        # self.setParent(hou.qt.mainWindow(), QtCore.Qt.Window)
         self.setParent(QApplication.desktop())
 
-    def paintEvent(self, event):
+    def paintEvent(self, event) -> None:
+        """
+            Init QPainter
+        :param event:
+        """
         if self.is_drawing:
             self.mask = self.blackMask.copy()
             pp = QPainter(self.mask)
@@ -44,20 +49,31 @@ class ScreenShotTool(QWidget):
             pp.drawRect(QRect(self.start_point, self.end_point))
             self.setMask(QBitmap(self.mask))
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event) -> None:
+        """
+            Start Draw
+        :param event:
+        """
         if event.button() == Qt.LeftButton:
             self.start_point = event.pos()
             self.end_point = self.start_point
             self.is_drawing = True
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event) -> None:
+        """
+            Update End Point
+        :param event:
+        """
         if self.is_drawing:
-
             self.end_point = QPoint(event.pos().x(), self.start_point.y() + event.pos().x() - self.start_point.x())
 
             self.update()
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event) -> None:
+        """
+            Save Picture
+        :param event:
+        """
         if event.button() == Qt.LeftButton:
 
             try:
@@ -67,13 +83,21 @@ class ScreenShotTool(QWidget):
 
             rect = QRect(self.start_point, self.end_point)
             outputRegion = screenshot.copy(rect)
-            newname = self.name
-            outputRegion.save(self.path + '/' + newname + '.jpg', format='JPG', quality=100)
+            new_name = self.name
+            outputRegion.save(self.path + '/' + new_name + '.jpg', format='JPG', quality=100)
             self.close()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
+        """
+            Set Parent To None When Window Closed
+        :param event:
+        """
         self.setParent(None)
 
-    def keyPressEvent(self, event):  # 设置esc键退出
+    def keyPressEvent(self, event) -> None:
+        """
+            Close Window When Press Escape
+        :param event:
+        """
         if event.key() == Qt.Key_Escape:
             self.close()

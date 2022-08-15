@@ -1,17 +1,15 @@
-import os
-import sys
-import hou
 import json
-
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtWidgets import QDesktopWidget
-
-from Libs.path import ToolPathManager
-from Libs.config import ToolConfigManager
-from Libs.ui import CustomLabel, CustomButton
-from Libs.config import SaveVexPyNodeInfo, SaveNodePresetInfo, SaveFileManagerInfo, SaveCommonToolNodeInfo
-from Libs.utilities import ToolUtilityClasses
+import os
 from imp import reload
+
+import hou
+from PySide2 import QtCore, QtWidgets, QtGui
+
+from Libs.config import SaveVexPyNodeInfo, SaveNodePresetInfo, SaveFileManagerInfo, SaveCommonToolNodeInfo
+from Libs.config import ToolConfigManager
+from Libs.path import ToolPathManager
+from Libs.ui import CustomLabel, CustomButton
+from Libs.utilities import ToolUtilityClasses
 
 reload(ToolPathManager)
 reload(ToolConfigManager)
@@ -27,7 +25,7 @@ tool_path_manager = ToolPathManager.ToolPath()
 tool_config_manager = ToolConfigManager.ToolConfig()
 tool_widget_utility_func = ToolUtilityClasses.SetWidgetInfo
 tool_hou_node_utility_func = ToolUtilityClasses.HouNodesUtilities
-too_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass()
+tool_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass()
 
 
 class HoudiniPythonTools(QtWidgets.QMainWindow):
@@ -56,14 +54,31 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.setMaximumSize(QtCore.QSize(1100, 830))
         self.statusBar()
 
+        # current select file dir to open file
         self.current_select_file_dir = None
+
+        # if current select file dir is houdini file
         self.__current_hip_file_path_from_file_manager = None
+
+        # current select file name by tree view
         self.current_select_file_name = None
+
+        # current select file extension by tree view
         self.current_select_file_type = None
+
+        # current select file marker by tree view
         self.current_select_file_marker = None
+
+        # current select file parent folder by tree view
         self.current_select_file_folder = None
+
+        # current select file belongs which project by tree view
         self.current_select_file_project = None
 
+        # previous select tool type button list
+        self.previous_common_tool_btn_list = []
+
+        # all types of button
         self.button_type_list = ['Common', 'Obj', 'Sop', 'Dop', 'Top', 'Kine_fx', 'Solaris']
 
         # main toolbar widgets
@@ -88,6 +103,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__setup_common_tools_tab_widget_layout()
 
     def __setup_tool_bar_widget_layout(self) -> None:
+        """
+            Tool Bar UI Layout
+        :return:
+        """
         # toolbar
         tool_bar = self.addToolBar('')
         tool_bar.setFixedHeight(50)
@@ -141,7 +160,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         tool_bar.addWidget(self.__common_tool_node_add_btn)
 
     def __setup_main_tab_widget_layout(self) -> None:
-
+        """
+            Main Tab UI Layout
+        :return:
+        """
         main_v_layout = QtWidgets.QVBoxLayout(self.__main_widget)
         main_v_layout.setContentsMargins(1, 1, 1, 1)
 
@@ -180,6 +202,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__all_main_tab_list = self.__main_tab_list + self.__add_tabs
 
     def __setup_vex_py_tab_widget_layout(self) -> None:
+        """
+            Code Preset Tab Main UI Layout
+        :return:
+        """
         vex_py_tab_v_layout = QtWidgets.QVBoxLayout(self.__vex_py_tab)
         vex_py_tab_h_layout = QtWidgets.QHBoxLayout(self.__vex_py_tab)
 
@@ -188,10 +214,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__vex_py_tab_import_btn = QtWidgets.QPushButton('import')
         self.__vex_py_tab_update_btn = QtWidgets.QPushButton('update')
         self.__vex_py_tab_delete_btn = QtWidgets.QPushButton('delete')
-        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_add_btn, 'add_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_import_btn, 'import_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_update_btn, 'update_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_delete_btn, 'delete_btn', None)
+        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_add_btn, 'add_btn')
+        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_import_btn, 'import_btn')
+        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_update_btn, 'update_btn')
+        tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_delete_btn, 'delete_btn')
 
         self.current_item = None
         self.code_type = 0
@@ -245,6 +271,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         vex_py_tab_v_layout.addLayout(vex_py_tab_h_sub_layout)
 
     def __setup_node_preset_widget_layout(self) -> None:
+        """
+            Node Preset Tab Main UI Layout
+        :return:
+        """
         node_preset_main_v_layout = QtWidgets.QVBoxLayout(self.__node_preset_tab)
         node_preset_main_h_layout = QtWidgets.QHBoxLayout(self.__node_preset_tab)
 
@@ -254,11 +284,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__node_preset_tab_update_image_btn = QtWidgets.QPushButton('update image')
         self.__node_preset_tab_delete_btn = QtWidgets.QPushButton('delete')
 
-        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_add_btn, 'add_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_import_btn, 'import_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_update_info_btn, 'update_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_update_image_btn, 'update_image_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_delete_btn, 'delete_btn', None)
+        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_add_btn, 'add_btn')
+        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_import_btn, 'import_btn')
+        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_update_info_btn, 'update_btn')
+        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_update_image_btn, 'update_image_btn')
+        tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_delete_btn, 'delete_btn')
 
         self.__node_preset_tab_list_widget = QtWidgets.QListWidget()
         self.__node_preset_tab_node_type_combo_box = QtWidgets.QComboBox()
@@ -358,9 +388,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__file_manager_tab_update_btn = QtWidgets.QPushButton('update')
         self.__file_manager_tab_delete_btn = QtWidgets.QPushButton('delete')
 
-        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_add_btn, 'add_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_update_btn, 'update_btn', None)
-        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_delete_btn, 'delete_btn', None)
+        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_add_btn, 'add_btn')
+        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_update_btn, 'update_btn')
+        tool_widget_utility_func.set_widget_icon(self.__file_manager_tab_delete_btn, 'delete_btn')
 
         self.__file_manager_tab_add_btn.clicked.connect(self.__on_file_manager_tab_add_btn_clicked)
         self.__file_manager_tab_update_btn.clicked.connect(self.__on_file_manager_tab_update_btn_clicked)
@@ -383,6 +413,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__setup_file_manager_tree_view_info()
 
     def __setup_common_tools_tab_widget_layout(self) -> None:
+        """
+            Common Button Tool Tab Main UI Layout
+        :return:
+        """
         common_tool_main_v_layout = QtWidgets.QVBoxLayout(self.__common_tools_tab)
 
         self.__common_tool_btn_type_combo_box = QtWidgets.QComboBox()
@@ -406,22 +440,35 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         self.__create_common_tools_btn()
 
-    def __create_common_tools_btn(self):
+    def __create_common_tools_btn(self) -> None:
+        """
+            Create Tool Button To Grid Layout
+        :return:
+        """
+        # current select button type
         btn_type = self.__common_tool_btn_type_combo_box.currentText()
-
         btn_name_dict = None
         btn_name_list_path = tool_path_manager.common_tools_btn_name_list_path
         btn_preset_path = tool_path_manager.common_tools_path
         with open(btn_name_list_path, 'r') as f:
             btn_name_dict = json.load(f)
 
+        # load button file preset
         all_btn_files = os.listdir(btn_preset_path)
         btn_py_files = [x for x in all_btn_files if x.split('.')[-1].startswith('py')]
 
-        btn_row_number = 0
-        btn_colum_number = 0
+        # current tool button row number in grid layout
+        btn_rows_number = 0
+
+        # current tool button column number in grid layout
+        btn_columns_number = 0
 
         self.btn_label_to_object_dict = {}
+
+        for i in self.previous_common_tool_btn_list:
+            i.deleteLater()  # delete previous type button when type changed
+
+        self.previous_common_tool_btn_list = []
 
         for file in btn_py_files:
             if file.startswith(btn_type):
@@ -432,9 +479,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                     with open(btn_tool_json_path, 'r') as f:
                         btn_info = json.load(f)
                 except:
-                    too_error_info.show_exception_info('error', 'load {} file got wrong'.format(btn_info_name))
+                    tool_error_info.show_exception_info('error', 'load {} file got wrong'.format(btn_info_name))
                     print(btn_tool_json_path)
                 else:
+                    # create custom button
                     common_tool_btn = CustomButton.CustomButton()
 
                     # json info
@@ -451,8 +499,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                     icon_path = tool_path_manager.icon_path + '/' + btn_icon_name
                     if not os.path.isfile(icon_path):
                         btn_icon_name = 'common_tool'
-                    tool_widget_utility_func.set_widget_icon(common_tool_btn,btn_icon_name)
+                    tool_widget_utility_func.set_widget_icon(common_tool_btn, btn_icon_name)
 
+                    # set custom button ui
                     common_tool_btn.setText(btn_label_name)
                     common_tool_btn.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
                     common_tool_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -461,25 +510,38 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                     common_tool_btn.setMaximumSize(QtCore.QSize(220, 85))
                     common_tool_btn.setAutoRaise(True)
 
+                    # connect
                     common_tool_btn._leftClicked.connect(self.__common_btn_start_work)  # 不希望每次创建按钮的时候导入模块用到这句
                     common_tool_btn._rightClicked.connect(self.__common_btn_delete)
-                    self.layout.addWidget(common_tool_btn, btn_colum_number, btn_row_number, 1, 1)
-                    btn_row_number += 1
-                    if btn_row_number % 4 == 0:
-                        btn_colum_number += 1
-                        btn_row_number = 0
+                    self.layout.addWidget(common_tool_btn, btn_columns_number, btn_rows_number, 1, 1)
+                    self.previous_common_tool_btn_list.append(common_tool_btn)
+                    btn_rows_number += 1
+                    # how many buttons in one row
+                    if btn_rows_number % 4 == 0:
+                        btn_columns_number += 1
+                        btn_rows_number = 0
 
-    def __common_btn_start_work(self):
+    def __common_btn_start_work(self) -> None:
+        """
+            Execute Tool Button Python Code
+        :return:
+        """
+        # current select button label name
         btn_name = self.sender().text()
+        # get button object name by label name
         btn_code_module = self.btn_label_to_object_dict[btn_name]
         exec('from Presets.CommonTools import ' + btn_code_module)
         exec('reload(' + btn_code_module + ')')
         exec(btn_code_module + '.start_work()')
 
-    def __common_btn_delete(self):
-        too_error_info.show_exception_info('warning', 'Doing')
+    def __common_btn_delete(self) -> None:
+        """
+            Delete Common Tool Button
+        :return:
+        """
+        tool_error_info.show_exception_info('warning', 'Doing')
 
-    def __read_config_value(self, key) -> str:
+    def __read_config_value(self, key: dict.keys) -> str:
         """
         :param key: the key of config
         :return: if contain key , return current value
@@ -496,25 +558,46 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                 return result
 
     def __on_refresh_toolbar_btn_clicked(self) -> None:
+        """
+            Refresh All Tab UI Info
+        :return:
+        """
         self.__setup_node_preset_tab_list_widget_info()
 
     def __on_config_toolbar_btn_clicked(self) -> None:
-        print('config toolbar btn clicked!')
+        """
+            Modify Tool Configs
+        :return:
+        """
+        tool_error_info.show_exception_info('abort', 'this tool is not done yet, please use other tool button')
 
     def __on_file_location_toolbar_btn_clicked(self) -> None:
+        """
+            Open Current File By Tab Type And Current Selected
+        :return:
+        """
         main_tab_index = self.__main_tab_widget.currentIndex()
-        if main_tab_index == 1:
-            os.startfile(tool_path_manager.vex_node_preset_folder_path)
-        elif main_tab_index == 2:
-            os.startfile(tool_path_manager.python_node_preset_folder_path)
+        if main_tab_index == 0:  # code info preset tab
+            os.startfile(tool_path_manager.code_preset_path)
+        elif main_tab_index == 1:  # node presets tab
+            os.startfile(tool_path_manager.node_preset_path)
         else:
             os.startfile(tool_path_manager.env_path)
 
     def __on_help_toolbar_btn_clicked(self) -> None:
-        print('help toolbar btn clicked!')
+        """
+            Show Tool Help Doc
+        :return:
+        """
+        tool_error_info.show_exception_info('abort', 'this tool is not done yet, please use other tool button')
 
     def __on_scale_toolbar_btn_clicked(self) -> None:
+        """
+            Make Tool Box Main UI Scaled To Min or Max
+        :return:
+        """
         current_window_size = self.geometry()
+        # current is max size
         if current_window_size.height() > 61:
             self.__height = current_window_size.height()
             self.__width = current_window_size.width()
@@ -526,6 +609,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__help_toolbar_btn.setEnabled(False)
             self.__file_location_toolbar_btn.setEnabled(False)
             self.__config_toolbar_btn.setEnabled(False)
+        # current is min size
         else:
             self.setMaximumSize(QtCore.QSize(980, 730))
             self.__main_widget.setVisible(True)
@@ -538,9 +622,18 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__config_toolbar_btn.setEnabled(True)
 
     def __on_filter_tab_edit_changed(self) -> None:
-        print('filter tab edit changed!')
+        """
+            Filter UI Info By Tab Type
+        :return:
+        """
+        pass
+        # print('filter tab edit changed!')
 
     def __common_tool_node_add_btn_clicked(self) -> None:
+        """
+            Abort a Window To Dump New Common Tool Button To Preset
+        :return:
+        """
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
         sub_window = main_window.findChild(QtWidgets.QWidget, 'add_common_tool_btn')
         if sub_window is None:
@@ -549,6 +642,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             ex.show()
 
     def __on_vex_py_tab_add_btn_clicked(self) -> None:
+        """
+            Abort a Window To Dump New Code Info To Preset
+        :return:
+        """
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
         sub_window = main_window.findChild(QtWidgets.QWidget, 'save_vex_py_node_info')
         if sub_window is None:
@@ -558,68 +655,114 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         return
 
     def __setup_vex_py_tab_list_widget_info(self) -> None:
+        """
+            Load Json Code Info To List Widget
+        :return:
+        """
         self.__vex_py_tab_list_widget.clear()
         self.code_type = self.__vex_py_tab_code_type_combo_box.currentIndex()
         self.code_path = tool_widget_utility_func.get_current_code_path_by_combo_box_index(self.code_type)
 
+        # load code info from json file
         tool_widget_utility_func.add_code_info_to_list_widget(self.__vex_py_tab_list_widget, self.code_path)
 
     def __on_vex_py_tab_list_selection_change(self) -> None:
+        """
+            Refresh UI Code Info By Current List Widget Selected
+        :return:
+        """
         self.current_item = self.__vex_py_tab_list_widget.currentItem()
 
+        # load current select code info from json file
         code_info = tool_widget_utility_func.get_code_info_by_current_list_widget_item(self.code_path,
                                                                                        self.current_item)
         self.__vex_py_tab_code_name.setText(code_info[0])
         self.__vex_py_tab_code_info.setPlainText(code_info[1])
 
     def __on_vex_py_tab_import_btn_clicked(self) -> None:
+        """
+            Import Current Select Code Info To Houdini
+        :return:
+        """
         if self.current_item is None:
             self.current_item = self.__vex_py_tab_list_widget.currentItem()
         code_info = tool_widget_utility_func.get_code_info_by_current_list_widget_item(self.code_path,
                                                                                        self.current_item)
-
+        # import current code info to houdini
         tool_hou_node_utility_func.import_code_to_houdini_by_code_info(code_info, self.code_type)
 
     def __on_vex_py_tab_update_btn_clicked(self) -> None:
+        """
+            Update Current Select Code Info By List Widget
+        :return:
+        """
+        # overwrite current code info to json file
         SaveVexPyNodeInfo.SaveVexPyNodeInfo.update_code_by_select_node_info(self.current_item, self.code_type)
         self.__setup_vex_py_tab_list_widget_info()
 
     def __on_vex_py_tab_delete_btn_clicked(self) -> None:
+        """
+            Delete Current Select Code Info By List Widget
+        :return:
+        """
+        # delete current code info from json file
         SaveVexPyNodeInfo.SaveVexPyNodeInfo.delete_select_code_info(self.current_item, self.code_type)
         self.__setup_vex_py_tab_list_widget_info()
 
     def __on_node_preset_tab_add_btn_clicked(self) -> None:
+        """
+            Abort A Window To Dump Node Preset Info
+        :return:
+        """
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
         sub_window = main_window.findChild(QtWidgets.QWidget, 'save_node_preset_info')
         if sub_window is None:
             ex = SaveNodePresetInfo.SaveNodePresetInfo()
             ex.setParent(self, QtCore.Qt.Window)
+            # is update mode
             ex.is_update_node_preset(False)
             ex.show()
         return
 
     def __setup_node_preset_tab_list_widget_info(self) -> None:
+        """
+            Refresh List Widget By Node Preset Info
+        :return:
+        """
         self.__node_preset_tab_list_widget.clear()
         self.node_type = self.__node_preset_tab_type_combo_box.currentText()
 
         self.node_path = tool_path_manager.node_preset_path
+
+        # load node preset info from json file
         tool_widget_utility_func.add_node_preset_info_to_list_widget(self.__node_preset_tab_list_widget,
                                                                      self.node_path,
                                                                      self.node_type)
 
     def __on_node_preset_tab_import_btn_clicked(self) -> None:
+        """
+            Import Current Select Node Preset Info To Houdini
+        :return:
+        """
         self.current_item = self.__node_preset_tab_list_widget.currentItem()
-        node_info = tool_widget_utility_func.create_node_preset_info_by_current_list_widget_item(self.node_path,
-                                                                                                 self.current_item,
-                                                                                                 self.node_type)
+        # create node by json node info and create in houdini
+        tool_widget_utility_func.create_node_preset_info_by_current_list_widget_item(self.node_path,
+                                                                                     self.current_item,
+                                                                                     self.node_type)
 
     def __on_node_preset_tab_list_selection_change(self) -> None:
+        """
+            Refresh List Widget UI Node Info By Current Selected
+        :return:
+        """
         self.current_item = self.__node_preset_tab_list_widget.currentItem()
+        # node screen shot
         image_path = tool_widget_utility_func.get_node_image_path_by_current_list_widget_item(
             self.node_path,
             self.current_item,
             self.node_type)
         self.__node_preset_tab_screen_shot_label.setPixmap(QtGui.QPixmap(image_path))
+        # node marker
         info_list = tool_widget_utility_func.get_node_remark_info_by_current_list_widget_item(
             self.node_path,
             self.current_item,
@@ -631,12 +774,21 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__node_preset_tab_label_remark.setText(remark)
 
     def __on_node_preset_tab_update_image_btn_clicked(self) -> None:
+        """
+            Update Current Select Node Preset Screen Shot Picture
+        :return:
+        """
         self.current_item = self.__node_preset_tab_list_widget.currentItem()
         self.node_type = self.__node_preset_tab_type_combo_box.currentText()
+        # update current select screen shot
         SaveNodePresetInfo.SaveNodePresetInfo.update_screen_shot(self.current_item,
                                                                  self.node_type)
 
     def __on_node_preset_tab_update_info_btn_clicked(self) -> None:
+        """
+            Update Current Node Info Preset To File Preset
+        :return:
+        """
         self.current_item = self.__node_preset_tab_list_widget.currentItem()
         if self.current_item:
             name = self.current_item.text()
@@ -645,6 +797,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             if sub_window is None:
                 ex = SaveNodePresetInfo.SaveNodePresetInfo()
                 ex.setParent(self, QtCore.Qt.Window)
+                # is update node
                 ex.is_update_node_preset(True, self.node_type, name)
                 ex.show()
             return
@@ -652,11 +805,20 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.about(self, 'warning', 'please select node to update')
 
     def __on_node_preset_tab_delete_btn_clicked(self) -> None:
+        """
+            Delete Current Select Node Preset From File Preset
+        :return:
+        """
         list_widget = self.__node_preset_tab_list_widget
         self.node_type = self.__node_preset_tab_type_combo_box.currentText()
+        # delete node preset from json file
         SaveNodePresetInfo.SaveNodePresetInfo.delete_node_preset(list_widget, self.node_type)
 
     def __on_file_manager_tab_add_btn_clicked(self) -> None:
+        """
+            Abort A Window To Dump New File Info To File Manager
+        :return:
+        """
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
         sub_window = main_window.findChild(QtWidgets.QWidget, 'save_file_manager_info')
         if sub_window is None:
@@ -666,6 +828,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         return
 
     def __on_file_manager_tab_update_btn_clicked(self) -> None:
+        """
+            Update Current File Info To File Manager Info Preset
+        :return:
+        """
         if self.current_select_file_name:
             main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
             sub_window = main_window.findChild(QtWidgets.QWidget, 'update_file_manager_info')
@@ -680,22 +846,33 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                                              file_marker=self.current_select_file_marker)
                 ex.show()
         else:
-            too_error_info.show_exception_info('waring', 'please select filename')
+            tool_error_info.show_exception_info('waring', 'please select filename')
 
     def __on_file_manager_tab_delete_btn_clicked(self) -> None:
+        """
+            Delete Current Select File Info In File Manager Info Preset
+        :return:
+        """
         if self.current_select_file_name:
             ex = SaveFileManagerInfo.SaveFileManagerInfo()
+            # remove item info from file
             ex.delete_current_index_info(project_name=self.current_select_file_project,
                                          folder_name=self.current_select_file_folder,
                                          file_name=self.current_select_file_name,
                                          file_dir=self.current_select_file_dir)
             file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
             row = file_name.index().row()
+            # remove item from tree view
             self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
         else:
-            too_error_info.show_exception_info('waring', 'please select filename')
+            tool_error_info.show_exception_info('waring', 'please select filename')
 
     def __setup_file_manager_tree_view_info(self) -> None:
+        """
+            Load File Preset From Json File And Dump To TreeView Widget
+        :return:
+        """
+        # json file
         all_info_list = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
         model = self.__file_manager__tree_view_model
         model.setHorizontalHeaderLabels(['file', 'file_type', 'file_marker', 'file_dir'])
@@ -728,7 +905,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         tree_view.expandAll()
 
     def __on_current_tree_view_change(self, current):
-
+        """
+            Recording Current File Info By Current Selected TreeView Item
+        :param current:
+        :return:
+        """
         self.current_select_file_name_item = current.sibling(current.row(), 0)
         self.current_select_file_name = self.current_select_file_name_item.data()
 
@@ -741,6 +922,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.current_select_file_dir_item = current.sibling(current.row(), 3)
         self.current_select_file_dir = self.current_select_file_dir_item.data()
 
+        # if select file
         if self.current_select_file_dir:
             self.current_select_file_folder_item = current.parent()
             self.current_select_file_folder = self.current_select_file_folder_item.data()
@@ -752,6 +934,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.current_select_file_name = None
             self.current_select_file_marker = None
 
+            # if select folder
             if self.__file_manager__tree_view_model.itemFromIndex(current.parent()):
 
                 self.current_select_file_folder_item = current
@@ -760,6 +943,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                 self.current_select_file_project_item = current.parent()
                 self.current_select_file_project = current.parent().data()
 
+            # select project
             else:
 
                 self.current_select_file_folder = None
@@ -768,6 +952,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         if self.current_select_file_type is not None:
             info = str(self.current_select_file_type).lower()
+
             if info == 'hip':
                 self.__current_hip_file_path_from_file_manager = self.current_select_file_dir
             else:
@@ -782,7 +967,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         self.statusBar().showMessage(txt)
 
-    def open_context_menu(self):
+    def open_context_menu(self) -> None:
+        """
+            Open Context Menu When Right Click Current TreeView Item
+        :return:
+        """
         self.file_manager_tree_view_menu = QtWidgets.QMenu('Menu', self)
 
         open_file_action = QtWidgets.QAction('open_file_location', self)
@@ -803,25 +992,42 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.file_manager_tree_view_menu.exec_(QtGui.QCursor.pos())
 
     def __on_menu_open_file_action(self) -> None:
+        """
+            Open Current File Location By TreeView Current Select File Path
+        :return:
+        """
         file_dir = self.current_select_file_dir
         if file_dir is not None:
             if len(tool_path_manager.get_file_suffix(file_dir)):
                 file_dir = tool_path_manager.get_parent_path(file_dir)
-            os.startfile(file_dir)
+            try:
+                os.startfile(file_dir)
+            except:
+                tool_error_info.show_exception_info('error', 'open file got wrong, please check file is really exist')
 
     def __on_menu_open_hip_action(self) -> None:
+        """
+            Open Houdini Files If Current TreeView Select File Extension Is End Of Hip
+        :return:
+        """
         if self.__current_hip_file_path_from_file_manager is not None:
-            hou.hipFile.load(str(self.__current_hip_file_path_from_file_manager),
-                             suppress_save_prompt=True)
+            try:
+                hou.hipFile.load(str(self.__current_hip_file_path_from_file_manager),
+                                 suppress_save_prompt=True)
+            except:
+                tool_error_info.show_exception_info('error', 'open file got wrong, please check file is really exist')
 
     def __on_menu_import_file_action(self) -> None:
-
-        too_error_info.show_exception_info('warning', 'doing... try other function')
+        """
+            Import Current TreeView Select File By Extension
+        :return:
+        """
+        tool_error_info.show_exception_info('warning', 'doing... try other function')
 
     def keyPressEvent(self, event) -> None:
         """
-            :param event:  if press Escape close window
-            :return: None
-            """
+        :param event:  if press Escape close window
+        :return: None
+        """
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()

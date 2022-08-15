@@ -1,11 +1,11 @@
-import hou
-import re
 import json
-import os
+import re
+from imp import reload
+
+from PySide2 import QtWidgets
+
 from Libs.path import ToolPathManager
 from Libs.utilities import ToolUtilityClasses
-from imp import reload
-from PySide2 import QtWidgets, QtCore
 
 reload(ToolUtilityClasses)
 reload(ToolPathManager)
@@ -16,6 +16,9 @@ tool_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass()
 
 
 class SaveCommonToolNodeInfo(QtWidgets.QWidget):
+    """
+        Save Common Tool Button Info To File
+    """
     def __init__(self):
         super(SaveCommonToolNodeInfo, self).__init__()
         self.setGeometry(1200, 1200, 370, 400)
@@ -25,7 +28,11 @@ class SaveCommonToolNodeInfo(QtWidgets.QWidget):
         self.button_type_list = ['Common', 'Obj', 'Sop', 'Dop', 'Top', 'Kine_fx', 'Solaris']
         self.set_window(self.button_type_list)
 
-    def set_window(self, button_type_list: list):
+    def set_window(self, button_type_list: list) -> None:
+        """
+            Main Window UI Layout
+        :param button_type_list:
+        """
         main_v_layout = QtWidgets.QVBoxLayout(self)
         btn_h_layout = QtWidgets.QHBoxLayout()
 
@@ -116,10 +123,16 @@ class SaveCommonToolNodeInfo(QtWidgets.QWidget):
         self.__btn_type_combo_box.currentIndexChanged.connect(self.btn_type_changed)
         self.__reset_btn.clicked.connect(self.reset_btn_info)
 
-    def btn_type_changed(self):
+    def btn_type_changed(self) -> None:
+        """
+            Change Button Type
+        """
         self.btn_name_changed()
 
-    def btn_name_changed(self):
+    def btn_name_changed(self) -> None:
+        """
+            Check Button Name Is Correct Info
+        """
         object_name = self.btn_object_name_line_edit.text()
         btn_type = self.__btn_type_combo_box.currentText()
         re_name = '^[0-9a-zA-Z_]+$'
@@ -132,7 +145,10 @@ class SaveCommonToolNodeInfo(QtWidgets.QWidget):
         self.btn_icon_name_line_edit.setText(btn_type + '_' + object_name + '.png')
         self.btn_code_file_name_label.setText(btn_type + '_' + object_name + '.py')
 
-    def reset_btn_info(self):
+    def reset_btn_info(self) -> None:
+        """
+            Reset All Button Info To ''
+        """
         self.btn_code_info_line_edit.setPlainText('')
         self.btn_object_name_line_edit.setText('')
         self.btn_code_file_name_label.setText('')
@@ -140,7 +156,10 @@ class SaveCommonToolNodeInfo(QtWidgets.QWidget):
         self.btn_icon_name_line_edit.setText('')
         self.btn_tips_line_edit.setText('')
 
-    def add_btn(self):
+    def add_btn(self) -> None:
+        """
+            Dump New Button Info To Json File And Create Tool Python File
+        """
         code_info = self.btn_code_info_line_edit.toPlainText()
         btn_type = self.__btn_type_combo_box.currentText()
         btn_object_name = self.btn_object_name_line_edit.text()
@@ -188,5 +207,9 @@ class SaveCommonToolNodeInfo(QtWidgets.QWidget):
         else:
             tool_error_info.show_exception_info('error', 'please input btn name')
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
+        """
+            Set Parent To None When Window Closed
+        :param event:
+        """
         self.setParent(None)

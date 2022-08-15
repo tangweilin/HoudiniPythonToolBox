@@ -2,11 +2,13 @@ import json
 from Libs.path import ToolPathManager
 from imp import reload
 from Libs.utilities import ToolUtilityClasses
+
 reload(ToolPathManager)
 reload(ToolUtilityClasses)
 
 tool_path_manager = ToolPathManager.ToolPath()
 tool_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass
+
 
 class ToolConfig:
     """
@@ -14,7 +16,7 @@ class ToolConfig:
     """
 
     @classmethod
-    def get_config_value_by_key(cls, config, key) -> str:
+    def get_config_value_by_key(cls, config: dict, key: dict.keys) -> str:
         """
         return current config value in to specify config file
         :param config: current config
@@ -25,7 +27,7 @@ class ToolConfig:
         return config_value
 
     @classmethod
-    def load_json_file_info_by_path(cls, path) -> str:
+    def load_json_file_info_by_path(cls, path: str) -> str:
         """
             Load Json Info From File
         :param path: Json Path
@@ -41,7 +43,7 @@ class ToolConfig:
             return info_list
 
     @classmethod
-    def dump_json_file_info_by_path(cls, path, info) -> None:
+    def dump_json_file_info_by_path(cls, path: str, info) -> None:
         """
             Dump Json Info To Current Json File
         :param path: Json Path

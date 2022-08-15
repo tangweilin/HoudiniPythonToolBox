@@ -107,6 +107,7 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         file_remark_h_layout.addWidget(file_remark_label)
         file_remark_h_layout.addWidget(self.file_remark_line_edit)
 
+        # layout
         v_sub_layout.addLayout(file_name_h_layout)
         v_sub_layout.addLayout(file_dir_h_layout)
         v_sub_layout.addLayout(file_remark_h_layout)
@@ -126,9 +127,12 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         v_layout.addLayout(node_name_h_layout)
         v_layout.addLayout(author_h_layout)
         v_layout.addLayout(remark_h_layout)
-        self.setup_combox_value()
+        self.setup_combo_box_value()
 
-    def setup_combox_value(self) -> None:
+    def setup_combo_box_value(self) -> None:
+        """
+            Set Up Combo Box Preset Text By Json Info
+        """
         all_info_list = self.load_file_info_from_json_file()
         project_list = []
         folder_list = []
@@ -151,17 +155,31 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
             self.file_type_choose_combo_box.addItem(t)
 
     def on_project_combo_box_changed(self) -> None:
+        """
+            Set Up Project Name
+        """
         self.project_choose_line_edit.setText(self.project_choose_combo_box.currentText())
 
     def on_folder_combo_box_changed(self) -> None:
+        """
+            Set Up Folder Name
+        """
         self.folder_choose_line_edit.setText(self.folder_choose_combo_box.currentText())
 
     def on_file_type_combo_box_changed(self) -> None:
+        """
+            Set Up File Extension
+        """
         self.file_type_line_edit.setText(self.file_type_choose_combo_box.currentText())
 
     def save_file_info_to_json_file(self) -> None:
+        """
+            Save Current File Info To Json File
+        :return:
+        """
         path = tool_path_manager.file_manager_preset_path
 
+        # Current File Info Dict
         file_info_dict = {
             'file_name': [self.file_name_line_edit.text()],
             'file_dir': [self.file_dir_line_edit.text()],
@@ -212,6 +230,9 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
 
     def get_current_file_info(self) -> None:
+        """
+            Dump Current File Info To UI Preset
+        """
         file_name = hou.hipFile.name()
         file_path = hou.hipFile.path()
         self.file_type_line_edit.setText('.hip')
@@ -222,6 +243,9 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.on_folder_combo_box_changed()
 
     def save_multi_file_info(self) -> None:
+        """
+            Save Multi File Info To Json File
+        """
         file_dialog = QtWidgets.QFileDialog()
         file_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         file_dialog.setFilter(QtCore.QDir.Files)
@@ -250,6 +274,9 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
                         self.save_file_info_to_json_file()
 
     def reset_ui_preset_info(self) -> None:
+        """
+            Set UI Preset Info To ''
+        """
         self.file_type_line_edit.setText('')
         self.file_name_line_edit.setText('')
         self.file_dir_line_edit.setText('')
@@ -257,7 +284,16 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.project_choose_line_edit.setText('')
         self.folder_choose_line_edit.setText('')
 
-    def update_current_index_info(self, project_name, folder_name, file_name, file_type, file_dir, file_marker) -> None:
+    def update_current_index_info(self, project_name: str, folder_name: str, file_name: str, file_type: str, file_dir: str, file_marker: str) -> None:
+        """
+            Set Info To UI Preset To Update
+        :param project_name: File Belongs To Which Project
+        :param folder_name: File Belongs To Which Folder
+        :param file_name: File Name
+        :param file_type: File Extension
+        :param file_dir: File Dir
+        :param file_marker: File Marker
+        """
         self.project_choose_line_edit.setText(project_name)
         self.folder_choose_line_edit.setText(folder_name)
         self.file_name_line_edit.setText(file_name)
@@ -265,7 +301,14 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.file_dir_line_edit.setText(file_dir)
         self.file_remark_line_edit.setText(file_marker)
 
-    def delete_current_index_info(self, project_name, folder_name, file_name, file_dir) -> None:
+    def delete_current_index_info(self, project_name: str, folder_name: str, file_name: str, file_dir: str) -> None:
+        """
+            Delete Current File Info From Json File
+        :param project_name: File Belongs To Which Project
+        :param folder_name: File Belongs To Which Folder
+        :param file_name: File Name
+        :param file_dir: File Dir
+        """
         if file_name:
             path = tool_path_manager.file_manager_preset_path
             info_list = tool_config_manager.load_json_file_info_by_path(path)
@@ -284,6 +327,10 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
 
     @classmethod
     def load_file_info_from_json_file(cls) -> str:
+        """
+            Load File Json Info
+        :return:
+        """
         path = tool_path_manager.file_manager_preset_path
         info_list = tool_config_manager.load_json_file_info_by_path(path)
         all_file_info = info_list['project']

@@ -1,11 +1,12 @@
-import hou
-import re
 import json
 import os
+from imp import reload
+
+import hou
+from PySide2 import QtWidgets
+
 from Libs.path import ToolPathManager
 from Libs.utilities import ToolUtilityClasses
-from imp import reload
-from PySide2 import QtWidgets
 
 reload(ToolUtilityClasses)
 reload(ToolPathManager)
@@ -92,6 +93,8 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
         code_type_index = self.code_type_choose_combo_box.currentIndex()
         code_path = None
         if node_code_name_info:
+
+            # if have code text
             if node_code_text_info:
                 if code_type_index == 0:
                     code_path = tool_path_manager.vex_codes_path
@@ -99,6 +102,8 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                     code_path = tool_path_manager.python_codes_path
                 all_files = os.listdir(code_path)
                 code_files = [x for x in all_files if x.split('.')[-1].lower() == 'json']
+
+                # replace
                 if node_code_name_info + '.json' in code_files:
                     replace_result = QtWidgets.QMessageBox.warning(self,
                                                                    'Replacing',
@@ -112,17 +117,25 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                     with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
                         json.dump(node_code_text_info, f)
                         self.close()
+
+            # if select houdini code node
             else:
                 current_node = self.get_select_node()
                 if current_node:
                     current_node_name = current_node.type().name()
                     code_type = self.code_type_choose_combo_box.currentIndex()
+
+                    # if select python node
                     if node_code_name_info and current_node_name == 'python':
                         codes = current_node.parm('python').rawValue()
+
+                        # if select node have code text
                         if codes:
                             code_path = tool_path_manager.python_codes_path
                             all_files = os.listdir(code_path)
                             code_files = [x for x in all_files if x.split('.')[-1].lower() == 'json']
+
+                            # replace
                             if node_code_name_info + '.json' in code_files:
                                 replace_result = QtWidgets.QMessageBox.warning(self,
                                                                                'Replacing',
@@ -139,6 +152,7 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                         else:
                             QtWidgets.QMessageBox.about(self, 'waring', 'please input code in houdini python node')
 
+                    # if select wrangle node
                     elif node_code_name_info and current_node_name == 'attribwrangle':
                         code_path = tool_path_manager.vex_codes_path
                         code_run_over_class = self.node.parm('class').eval()
@@ -146,9 +160,13 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                             node_code_name = node_code_name_info + '_' + str(code_run_over_class)
 
                         codes = self.node.parm('snippet').rawValue()
+
+                        # if select node have code text
                         if codes:
                             allfiles = os.listdir(code_path)
                             files = [x for x in allfiles if x.split('.')[-1].lower() == 'json']
+
+                            # replace
                             if node_code_name_info + '.json' in files:
                                 replace_result = QtWidgets.QMessageBox.warning(self,
                                                                                'Replacing',
@@ -200,6 +218,7 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                 if result == QtWidgets.QMessageBox.Yes:
                     file_name = current_item.text()
                     code_path = None
+                    # wrangle
                     if code_type == 0:
                         if node.type().name() == 'attribwrangle':
                             code_path = tool_path_manager.vex_codes_path + '/' + file_name + '.json'
@@ -208,6 +227,8 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                                 json.dump(codes, f)
                         else:
                             tool_error_info.show_exception_info('warning', 'selection code type does not match')
+
+                    # python
                     elif code_type == 1:
                         if node.type().name() == 'python':
                             code_path = tool_path_manager.python_codes_path + '/' + file_name + '.json'
@@ -228,7 +249,6 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
         :param current_item: Current Select Code To Delete
         :param code_type: Which Type Of Code : Python Or Vex
         """
-        pass
         if current_item:
             result = QtWidgets.QMessageBox.warning(tool_error_info, 'delete!', 'are you sure to delete?',
                                                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
@@ -251,5 +271,9 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
         else:
             QtWidgets.QMessageBox.about(tool_error_info, '警告', '请先选择要删除的项')
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
+        """
+            Set Parent To None When Window Closed
+        :param event:
+        """
         self.setParent(None)

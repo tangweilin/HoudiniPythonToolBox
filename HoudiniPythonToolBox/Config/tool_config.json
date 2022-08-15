@@ -1,29 +1,3 @@
 {
-  "paths":
-  {
-    "createFolders": "",
-    "importFiles": "",
-    "screenshot": "",
-    "server": "",
-    "patha": ""
-  },
-  "GeometryInfo": null,
-  "alwaysPaths":
-  {
-    "createFolders": "",
-    "importFiles": "",
-    "screenshot": "",
-    "clearCachePj": "",
-    "clearCacheScene": ""
-  },
-  "toolBoxName": "ZLTA",
-  "tipsLang": 0,
-  "toolTip": 0,
-  "style": 0,
-  "bgcolor":"#ffffff",
-  "btncolor": null,
-  "class": "root",
-  "presetPrefix": "obj",
-  "autoRsize": 0,
-  "autoResize": 0
+  "toolBoxName": "ZLTA"
 }

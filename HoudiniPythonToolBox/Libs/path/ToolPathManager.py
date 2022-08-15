@@ -1,6 +1,7 @@
 import sys
 import os
-from pathlib import  Path
+from pathlib import Path
+
 
 class ToolPath:
     """
@@ -163,7 +164,7 @@ class ToolPath:
         return self.__tool_file_manager_preset_path
 
     @classmethod
-    def get_node_path_with_prefix(cls, path, node_type) -> str:
+    def get_node_path_with_prefix(cls, path: str, node_type: str) -> str:
         """
             Get Node Path Name With Specify Prefix
         :param path: Node Path
@@ -183,31 +184,31 @@ class ToolPath:
         pass
 
     @classmethod
-    def get_path_file_name(cls, path) -> str:
+    def get_path_file_name(cls, path: str) -> str:
         path_str = Path(path)
         path_file_name = path_str.name
         return path_file_name
 
     @classmethod
-    def get_parent_path(cls, path) -> Path:
+    def get_parent_path(cls, path: str) -> Path:
         path_str = Path(path)
         path_parent_path = path_str.parent
         return path_parent_path
 
     @classmethod
-    def get_file_suffix(cls, path) -> str:
+    def get_file_suffix(cls, path: str) -> str:
         path_str = Path(path)
         path_suffix = path_str.suffix
         return path_suffix
 
     @classmethod
-    def change_file_suffix(cls, path, suffix) -> Path:
+    def change_file_suffix(cls, path: str, suffix: str) -> Path:
         path_str = Path(path)
         path_suffix = path_str.with_suffix(suffix)
         return path_suffix
 
     @classmethod
-    def join_file_path(cls, path, file_name) -> Path:
+    def join_file_path(cls, path: str, file_name: str) -> Path:
         path_str = Path(path)
         path_str_join = path_str.joinpath(file_name)
         return path_str_join

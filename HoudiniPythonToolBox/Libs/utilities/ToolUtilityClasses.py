@@ -163,7 +163,7 @@ class SetWidgetInfo(QtWidgets.QWidget):
         return code_path
 
     @classmethod
-    def create_node_preset_info_by_current_list_widget_item(cls, path='', current_item=None, node_type='') -> str:
+    def create_node_preset_info_by_current_list_widget_item(cls, path='', current_item=None, node_type='') -> None:
         """
             Get Node Preset Info From Json File By Current Select List Widget Item And Create Houdini Nodes
         :param path: Node Path
