@@ -281,7 +281,6 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
                         tool_error_info.show_exception_info('error', 'The Current Folder Preset Is None')
                         print(len(self.select_dir))
                     for path in self.select_dir:
-
                         file_name = tool_path_manager.get_path_file_name(path)
                         file_dir = tool_path_manager.get_parent_path(path)
                         file_type = tool_path_manager.get_file_suffix(path)
@@ -301,7 +300,8 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.project_choose_line_edit.setText('')
         self.folder_choose_line_edit.setText('')
 
-    def update_current_index_info(self, project_name: str, folder_name: str, file_name: str, file_type: str, file_dir: str, file_marker: str) -> None:
+    def update_current_index_info(self, project_name: str, folder_name: str, file_name: str, file_type: str,
+                                  file_dir: str, file_marker: str) -> None:
         """
             Set Info To UI Preset To Update
         :param project_name: File Belongs To Which Project
@@ -319,29 +319,52 @@ class SaveFileManagerInfo(QtWidgets.QWidget):
         self.file_dir_line_edit.setText(file_dir)
         self.file_remark_line_edit.setText(file_marker)
 
-    def delete_current_index_info(self, project_name: str, folder_name: str, file_name: str, file_dir: str) -> None:
+    def delete_current_index_info(self, project_name: str,
+                                  folder_name: str,
+                                  file_name: str,
+                                  delete_folder: bool = False,
+                                  delete_project: bool = False) -> None:
         """
             Delete Current File Info From Json File
+        :param delete_folder:  Forced To Delete Folder And Folder Children
+        :param delete_project:  Forced To Delete Project And Project Children
         :param project_name: File Belongs To Which Project
         :param folder_name: File Belongs To Which Folder
         :param file_name: File Name
         :param file_dir: File Dir
         """
-        if file_name:
-            path = tool_path_manager.file_manager_preset_path
-            info_list = tool_config_manager.load_json_file_info_by_path(path)
-            for info in info_list['project']:
-                if info['project_name'] == project_name:
-                    for folder in info['folder']:
-                        if folder['folder_name'] == folder_name:
-                            file_info = folder['file_info']
-                            for i in range(0, len(file_info['file_name'])):
-                                if file_info['file_name'][i] == file_name:
-                                    file_info['file_name'].pop(i)
-                                    file_info['file_dir'].pop(i)
-                                    file_info['file_type'].pop(i)
-                                    file_info['file_marker'].pop(i)
-            tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
+        path = tool_path_manager.file_manager_preset_path
+        info_list = tool_config_manager.load_json_file_info_by_path(path)
+        if delete_project:
+            if project_name:
+                for i in range(0, len(info_list['project'])):
+
+                    if info_list['project'][i]['project_name'] == project_name:
+                        info_list['project'].pop(i)
+                        break
+
+        elif delete_folder:
+            if folder_name:
+                for info in info_list['project']:
+                    if info['project_name'] == project_name:
+                        for i in range(0, len(info['folder'])):
+                            if info['folder'][i]['folder_name'] == folder_name:
+                                info['folder'].pop(i)
+                                break
+        else:
+            if file_name:
+                for info in info_list['project']:
+                    if info['project_name'] == project_name:
+                        for folder in info['folder']:
+                            if folder['folder_name'] == folder_name:
+                                file_info = folder['file_info']
+                                for i in range(0, len(file_info['file_name'])):
+                                    if file_info['file_name'][i] == file_name:
+                                        file_info['file_name'].pop(i)
+                                        file_info['file_dir'].pop(i)
+                                        file_info['file_type'].pop(i)
+                                        file_info['file_marker'].pop(i)
+        tool_config_manager.dump_json_file_info_by_path(path=path, info=info_list)
 
     @classmethod
     def load_file_info_from_json_file(cls) -> str:

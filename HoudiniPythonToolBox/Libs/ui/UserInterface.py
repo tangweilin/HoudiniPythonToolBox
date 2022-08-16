@@ -563,7 +563,17 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             Refresh All Tab UI Info
         :return:
         """
-        self.__setup_node_preset_tab_list_widget_info()
+        main_tab_index = self.__main_tab_widget.currentIndex()
+        if main_tab_index == 0:  # code info preset tab
+            self.__setup_vex_py_tab_list_widget_info()
+        elif main_tab_index == 1:  # node presets tab
+            self.__setup_node_preset_tab_list_widget_info()
+        elif main_tab_index == 2:  # hda presets tab
+            pass
+        elif main_tab_index == 3:  # common tools tab
+            self.__setup_common_tools_tab_widget_layout()
+        elif main_tab_index == 4 :  # file manager tab
+            self.__setup_file_manager_tree_view_info()
 
     def __on_config_toolbar_btn_clicked(self) -> None:
         """
@@ -855,25 +865,71 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             Delete Current Select File Info In File Manager Info Preset
         :return:
         """
+        delete_project = False
+        delete_folder = False
+        if self.current_select_file_project:
+            if self.current_select_file_folder is None and self.current_select_file_name is None:
+                delete_project = True
+        if self.current_select_file_folder:
+            if self.current_select_file_name is None:
+                delete_folder = True
 
-        if self.current_select_file_name:
+        # delete current project
+        if delete_project:
             result = QtWidgets.QMessageBox.warning(self, "warning",
-                                                   "are you want to delete this file? ",
+                                                   "are you want to delete this project? ",
                                                    QtWidgets.QMessageBox.Yes |
                                                    QtWidgets.QMessageBox.No)
             if result == QtWidgets.QMessageBox.Yes:
                 ex = SaveFileManagerInfo.SaveFileManagerInfo()
-                # remove item info from file
+
                 ex.delete_current_index_info(project_name=self.current_select_file_project,
                                              folder_name=self.current_select_file_folder,
                                              file_name=self.current_select_file_name,
-                                             file_dir=self.current_select_file_dir)
-                file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
-                row = file_name.index().row()
-                # remove item from tree view
-                self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
-        else:
-            tool_error_info.show_exception_info('waring', 'please select filename')
+                                             delete_project=delete_project)
+                file_project = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_project_item)
+                row = file_project.index().row()
+                self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_project_item)
+                self.__setup_file_manager_tree_view_info()
+
+        # delete current folder:
+        if delete_folder:
+            result = QtWidgets.QMessageBox.warning(self, 'warning',
+                                                   "are you want to delete this folder?",
+                                                   QtWidgets.QMessageBox.Yes |
+                                                   QtWidgets.QMessageBox.No)
+            if result == QtWidgets.QMessageBox.Yes:
+                ex = SaveFileManagerInfo.SaveFileManagerInfo()
+
+                ex.delete_current_index_info(project_name=self.current_select_file_project,
+                                             folder_name=self.current_select_file_folder,
+                                             file_name=self.current_select_file_name,
+                                             delete_folder=delete_folder)
+                file_folder = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_folder_item)
+                row = file_folder.index().row()
+                self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_project_item)
+                self.__setup_file_manager_tree_view_info()
+        # delete current file item
+        if not delete_project and not delete_folder:
+            if self.current_select_file_name:
+                result = QtWidgets.QMessageBox.warning(self, "warning",
+                                                       "are you want to delete this file? ",
+                                                       QtWidgets.QMessageBox.Yes |
+                                                       QtWidgets.QMessageBox.No)
+                if result == QtWidgets.QMessageBox.Yes:
+                    ex = SaveFileManagerInfo.SaveFileManagerInfo()
+                    # remove item info from file
+                    ex.delete_current_index_info(project_name=self.current_select_file_project,
+                                                 folder_name=self.current_select_file_folder,
+                                                 file_name=self.current_select_file_name,
+                                                 delete_project=delete_project,
+                                                 delete_folder=delete_folder)
+                    file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
+                    row = file_name.index().row()
+                    # remove item from tree view
+                    self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
+            else:
+                tool_error_info.show_exception_info('waring', 'please select filename')
 
     def __setup_file_manager_tree_view_info(self) -> None:
         """
@@ -883,6 +939,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         # json file
         all_info_list = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
         model = self.__file_manager__tree_view_model
+        model.clear()
         model.setHorizontalHeaderLabels(['file', 'file_type', 'file_marker', 'file_dir'])
         for info in all_info_list:
 
@@ -1046,7 +1103,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                     hou.hipFile.load(str(self.__current_hip_file_path_from_file_manager),
                                      suppress_save_prompt=True)
                 except:
-                    tool_error_info.show_exception_info('error', 'open file may got something wrong, please check file ')
+                    tool_error_info.show_exception_info('error',
+                                                        'open file may got something wrong, please check file ')
 
     def __on_menu_import_file_action(self) -> None:
         """
