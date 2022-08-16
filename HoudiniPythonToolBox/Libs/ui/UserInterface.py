@@ -1,6 +1,7 @@
 import json
 import os
 from imp import reload
+import difflib
 
 import hou
 from PySide2 import QtCore, QtWidgets, QtGui
@@ -156,6 +157,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         # common tool btn node add btn
         self.__common_tool_node_add_btn = QtWidgets.QToolButton(tool_bar)
         tool_widget_utility_func.set_widget_icon(self.__common_tool_node_add_btn, 'add_tab_node.png', tool_bar_btn_size)
+        self.__common_tool_node_add_btn.setShortcut('F6')
         self.__common_tool_node_add_btn.clicked.connect(self.__common_tool_node_add_btn_clicked)
         self.__common_tool_node_add_btn.setStatusTip('create a new tab node')
         tool_bar.addWidget(self.__common_tool_node_add_btn)
@@ -633,13 +635,34 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__file_location_toolbar_btn.setEnabled(True)
             self.__config_toolbar_btn.setEnabled(True)
 
+    def search_text_in_list_widget(self, list_widget: QtWidgets.QListWidget, text: str) -> None:
+        """
+            Search Current Text In List Widget, If Match Text, Select Current List Widget Item
+        :param list_widget: List Widget To Search
+        :param text: Target Text
+        """
+        model = list_widget.model()
+        match = model.match(
+            model.index(0, list_widget.modelColumn()),
+            QtCore.Qt.DisplayRole,
+            text,
+            hits=1,
+            flags=QtCore.Qt.MatchStartsWith)
+        if match:
+            list_widget.setCurrentIndex(match[0])
+
     def __on_filter_tab_edit_changed(self) -> None:
         """
             Filter UI Info By Tab Type
         :return:
         """
-        pass
-        # print('filter tab edit changed!')
+        main_tab_index = self.__main_tab_widget.currentIndex()
+        if main_tab_index == 0:  # code info preset tab
+            self.search_text_in_list_widget(self.__vex_py_tab_list_widget, self.__line_edit_filter.text())
+            self.__on_vex_py_tab_list_selection_change()
+        elif main_tab_index == 1:  # node preset tab
+            self.search_text_in_list_widget(self.__node_preset_tab_list_widget, self.__line_edit_filter.text())
+            self.__on_node_preset_tab_list_selection_change()
 
     def __common_tool_node_add_btn_clicked(self) -> None:
         """
@@ -677,6 +700,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         # load code info from json file
         tool_widget_utility_func.add_code_info_to_list_widget(self.__vex_py_tab_list_widget, self.code_path)
+
+
 
     def __on_vex_py_tab_list_selection_change(self) -> None:
         """
