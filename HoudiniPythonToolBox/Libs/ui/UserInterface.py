@@ -83,6 +83,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         # all types of button
         self.button_type_list = ['Common', 'Obj', 'Sop', 'Dop', 'Top', 'Kine_fx', 'Solaris']
 
+        # all types of nodes
+        self.node_type_list = ['obj', 'sop', 'vop', 'dop', 'top']
+
         # main toolbar widgets
         self.__setup_tool_bar_widget_layout()
 
@@ -103,6 +106,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         # common tools btn main layout
         self.__setup_common_tools_tab_widget_layout()
+
+        # hda preset tab main layout
+        self.__setup_hda_preset_tab_widget_layout()
 
     def __setup_tool_bar_widget_layout(self) -> None:
         """
@@ -213,10 +219,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         vex_py_tab_h_layout = QtWidgets.QHBoxLayout(self.__vex_py_tab)
 
         # vex python code button
-        self.__vex_py_tab_add_btn = QtWidgets.QPushButton('add')
-        self.__vex_py_tab_import_btn = QtWidgets.QPushButton('import')
-        self.__vex_py_tab_update_btn = QtWidgets.QPushButton('update')
-        self.__vex_py_tab_delete_btn = QtWidgets.QPushButton('delete')
+        self.__vex_py_tab_add_btn = QtWidgets.QPushButton('add code')
+        self.__vex_py_tab_import_btn = QtWidgets.QPushButton('import code')
+        self.__vex_py_tab_update_btn = QtWidgets.QPushButton('update code info')
+        self.__vex_py_tab_delete_btn = QtWidgets.QPushButton('delete code')
         tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_add_btn, 'add_btn')
         tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_import_btn, 'import_btn')
         tool_widget_utility_func.set_widget_icon(self.__vex_py_tab_update_btn, 'update_btn')
@@ -281,22 +287,17 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         node_preset_main_v_layout = QtWidgets.QVBoxLayout(self.__node_preset_tab)
         node_preset_main_h_layout = QtWidgets.QHBoxLayout(self.__node_preset_tab)
 
-        self.__node_preset_tab_add_btn = QtWidgets.QPushButton('add')
-        self.__node_preset_tab_import_btn = QtWidgets.QPushButton('import')
-        self.__node_preset_tab_update_info_btn = QtWidgets.QPushButton('update info')
-        self.__node_preset_tab_update_image_btn = QtWidgets.QPushButton('update image')
-        self.__node_preset_tab_delete_btn = QtWidgets.QPushButton('delete')
+        self.__node_preset_tab_add_btn = QtWidgets.QPushButton('add node')
+        self.__node_preset_tab_import_btn = QtWidgets.QPushButton('import node')
+        self.__node_preset_tab_update_info_btn = QtWidgets.QPushButton('update  node info')
+        self.__node_preset_tab_update_image_btn = QtWidgets.QPushButton('update node  image')
+        self.__node_preset_tab_delete_btn = QtWidgets.QPushButton('delete node')
 
         tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_add_btn, 'add_btn')
         tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_import_btn, 'import_btn')
         tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_update_info_btn, 'update_btn')
         tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_update_image_btn, 'update_image_btn')
         tool_widget_utility_func.set_widget_icon(self.__node_preset_tab_delete_btn, 'delete_btn')
-
-        self.__node_preset_tab_list_widget = QtWidgets.QListWidget()
-        self.__node_preset_tab_node_type_combo_box = QtWidgets.QComboBox()
-        self.__node_preset_tab_node_type_combo_box.addItem('obj')
-        self.__node_preset_tab_node_type_combo_box.addItem('sop')
 
         # node preset list
         self.__node_preset_tab_list_widget = QtWidgets.QListWidget()
@@ -311,8 +312,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         # node preset  type combo box
         self.__node_preset_tab_type_combo_box = QtWidgets.QComboBox()
-        self.__node_preset_tab_type_combo_box.addItem('obj')
-        self.__node_preset_tab_type_combo_box.addItem('sop')
+        for i in self.node_type_list:
+            self.__node_preset_tab_type_combo_box.addItem(i)
 
         # node preset labels
         label_name = QtWidgets.QLabel('Author:')
@@ -404,7 +405,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         file_manager_main_h_layout.addWidget(self.__file_manager_tab_delete_btn)
 
         self.__file_manager_tree_view_widget = QtWidgets.QTreeView()
-        self.__file_manager__tree_view_model = QtGui.QStandardItemModel(self)
+        self.__file_manager_tree_view_model = QtGui.QStandardItemModel(self)
 
         file_manager_main_v_layout.addLayout(file_manager_main_h_layout)
         file_manager_main_v_layout.addWidget(self.__file_manager_tree_view_widget)
@@ -442,6 +443,90 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         common_tool_main_v_layout.addLayout(common_tools_grid_layout)
 
         self.__create_common_tools_btn()
+
+    def __setup_hda_preset_tab_widget_layout(self) -> None:
+        """
+            HDA Preset UI Main Layout
+        :return:
+        """
+        hda_preset_main_v_layout = QtWidgets.QVBoxLayout(self.__hda_tab)
+        hda_preset_main_h_layout = QtWidgets.QHBoxLayout()
+
+        self.__hda_preset_tab_add_btn = QtWidgets.QPushButton('add hda')
+        self.__hda_preset_tab_import_btn = QtWidgets.QPushButton('import hda')
+        self.__hda_preset_tab_update_info_btn = QtWidgets.QPushButton('update hda info')
+        self.__hda_preset_tab_update_image_btn = QtWidgets.QPushButton('update hda image')
+        self.__hda_preset_tab_delete_btn = QtWidgets.QPushButton('delete hda')
+
+        tool_widget_utility_func.set_widget_icon(self.__hda_preset_tab_add_btn, 'add_btn')
+        tool_widget_utility_func.set_widget_icon(self.__hda_preset_tab_import_btn, 'import_btn')
+        tool_widget_utility_func.set_widget_icon(self.__hda_preset_tab_update_info_btn, 'update_btn')
+        tool_widget_utility_func.set_widget_icon(self.__hda_preset_tab_update_image_btn, 'update_image_btn')
+        tool_widget_utility_func.set_widget_icon(self.__hda_preset_tab_delete_btn, 'delete_btn')
+
+        self.__hda_preset_tab_list_widget = QtWidgets.QListWidget()
+
+        # screen shot
+        self.__hda_preset_tab_screen_shot_label = CustomLabel.CustomLabel()
+        label_value = 0
+        label_value = 360 + int(120 * label_value / 100)
+        self.__hda_preset_tab_screen_shot_label.setMinimumSize(QtCore.QSize(label_value, label_value))
+        self.__hda_preset_tab_screen_shot_label.setMaximumSize(QtCore.QSize(label_value, label_value))
+        self.__hda_preset_tab_screen_shot_label.setScaledContents(True)
+        self.__hda_preset_tab_screen_shot_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.__hda_preset_tab_screen_shot_label.setWordWrap(True)
+
+        # label
+        label_name = QtWidgets.QLabel('Author:')
+        label_name.setMaximumSize(QtCore.QSize(180, 17))
+        label_name.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        label_name.setStyleSheet('color:rgb(255,255,0)')
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        label_name.setFont(font)
+
+        self.__hda_preset_tab_label_name = QtWidgets.QLabel('')
+        self.__hda_preset_tab_label_name.setMaximumSize(QtCore.QSize(180, 17))
+        self.__hda_preset_tab_label_name.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+        label_remark = QtWidgets.QLabel('remark:')
+        label_remark.setMaximumSize(QtCore.QSize(180, 17))
+        label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        label_remark.setStyleSheet('color:rgb(255,255,0)')
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        label_remark.setFont(font)
+
+        self.__hda_preset_tab_label_remark = QtWidgets.QLabel('info')
+        self.__hda_preset_tab_label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
+        self.__hda_preset_tab_label_remark.setWordWrap(True)
+        self.__hda_preset_tab_label_remark.setMaximumSize(QtCore.QSize(180, 300))
+
+        # layout
+        hda_preset_main_h_layout.addWidget(self.__hda_preset_tab_add_btn)
+        hda_preset_main_h_layout.addWidget(self.__hda_preset_tab_import_btn)
+        hda_preset_main_h_layout.addWidget(self.__hda_preset_tab_update_info_btn)
+        hda_preset_main_h_layout.addWidget(self.__hda_preset_tab_update_image_btn)
+        hda_preset_main_h_layout.addWidget(self.__hda_preset_tab_delete_btn)
+
+        hda_preset_tab_v_sub_layout = QtWidgets.QVBoxLayout()
+        hda_preset_tab_h_sub_layout = QtWidgets.QHBoxLayout()
+
+        hda_preset_tab_h_label_layout = QtWidgets.QHBoxLayout()
+        hda_preset_tab_v_label_layout = QtWidgets.QVBoxLayout()
+
+        hda_preset_tab_h_label_layout.addWidget(label_name)
+        hda_preset_tab_h_label_layout.addWidget(self.__hda_preset_tab_label_name)
+        hda_preset_tab_h_label_layout.addWidget(label_remark)
+        hda_preset_tab_h_label_layout.addWidget(self.__hda_preset_tab_label_remark)
+        hda_preset_tab_v_label_layout.addWidget(self.__hda_preset_tab_screen_shot_label)
+        hda_preset_tab_v_label_layout.addLayout(hda_preset_tab_h_label_layout)
+
+        hda_preset_main_v_layout.addLayout(hda_preset_main_h_layout)
+        hda_preset_tab_h_sub_layout.addWidget(self.__hda_preset_tab_list_widget)
+        hda_preset_tab_h_sub_layout.addLayout(hda_preset_tab_v_label_layout)
+        hda_preset_tab_v_sub_layout.addLayout(hda_preset_tab_h_sub_layout)
+        hda_preset_main_v_layout.addLayout(hda_preset_tab_v_sub_layout)
 
     def __create_common_tools_btn(self) -> None:
         """
@@ -574,7 +659,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             pass
         elif main_tab_index == 3:  # common tools tab
             self.__setup_common_tools_tab_widget_layout()
-        elif main_tab_index == 4 :  # file manager tab
+        elif main_tab_index == 4:  # file manager tab
             self.__setup_file_manager_tree_view_info()
 
     def __on_config_toolbar_btn_clicked(self) -> None:
@@ -651,6 +736,19 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         if match:
             list_widget.setCurrentIndex(match[0])
 
+    def search_item(self):
+        filter_text = self.__line_edit_filter.text()
+        if filter_text:
+            result = self.__file_manager_tree_view_model.findItems(filter_text,
+                                                          flags=QtCore.Qt.MatchExactly |
+                                                                QtCore.Qt.MatchRecursive |
+                                                                QtCore.Qt.MatchStartsWith)
+            for i in result:
+                item = self.__file_manager_tree_view_model.indexFromItem(i)
+                self.__file_manager_tree_view_widget.selectionModel().select(item, QtCore.QItemSelectionModel.Select)
+        else:
+            self.__file_manager_tree_view_widget.selectionModel().clear()
+
     def __on_filter_tab_edit_changed(self) -> None:
         """
             Filter UI Info By Tab Type
@@ -663,6 +761,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         elif main_tab_index == 1:  # node preset tab
             self.search_text_in_list_widget(self.__node_preset_tab_list_widget, self.__line_edit_filter.text())
             self.__on_node_preset_tab_list_selection_change()
+        elif main_tab_index == 2:  # hda preset tab
+            pass
+        elif main_tab_index == 4:  # file manager tab
+            self.search_item()
 
     def __common_tool_node_add_btn_clicked(self) -> None:
         """
@@ -700,8 +802,6 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
         # load code info from json file
         tool_widget_utility_func.add_code_info_to_list_widget(self.__vex_py_tab_list_widget, self.code_path)
-
-
 
     def __on_vex_py_tab_list_selection_change(self) -> None:
         """
@@ -912,9 +1012,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                                              folder_name=self.current_select_file_folder,
                                              file_name=self.current_select_file_name,
                                              delete_project=delete_project)
-                file_project = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_project_item)
+                file_project = self.__file_manager_tree_view_model.itemFromIndex(self.current_select_file_project_item)
                 row = file_project.index().row()
-                self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_project_item)
+                self.__file_manager_tree_view_model.removeRow(row, self.current_select_file_project_item)
                 self.__setup_file_manager_tree_view_info()
 
         # delete current folder:
@@ -930,9 +1030,9 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                                              folder_name=self.current_select_file_folder,
                                              file_name=self.current_select_file_name,
                                              delete_folder=delete_folder)
-                file_folder = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_folder_item)
+                file_folder = self.__file_manager_tree_view_model.itemFromIndex(self.current_select_file_folder_item)
                 row = file_folder.index().row()
-                self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_project_item)
+                self.__file_manager_tree_view_model.removeRow(row, self.current_select_file_project_item)
                 self.__setup_file_manager_tree_view_info()
         # delete current file item
         if not delete_project and not delete_folder:
@@ -949,10 +1049,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                                                  file_name=self.current_select_file_name,
                                                  delete_project=delete_project,
                                                  delete_folder=delete_folder)
-                    file_name = self.__file_manager__tree_view_model.itemFromIndex(self.current_select_file_name_item)
+                    file_name = self.__file_manager_tree_view_model.itemFromIndex(self.current_select_file_name_item)
                     row = file_name.index().row()
                     # remove item from tree view
-                    self.__file_manager__tree_view_model.removeRow(row, self.current_select_file_folder_item)
+                    self.__file_manager_tree_view_model.removeRow(row, self.current_select_file_folder_item)
             else:
                 tool_error_info.show_exception_info('waring', 'please select filename')
 
@@ -963,7 +1063,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         """
         # json file
         all_info_list = SaveFileManagerInfo.SaveFileManagerInfo.load_file_info_from_json_file()
-        model = self.__file_manager__tree_view_model
+        model = self.__file_manager_tree_view_model
         model.clear()
         model.setHorizontalHeaderLabels(['file', 'file_type', 'file_marker', 'file_dir'])
         for info in all_info_list:
@@ -1025,7 +1125,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.current_select_file_marker = None
 
             # if select folder
-            if self.__file_manager__tree_view_model.itemFromIndex(current.parent()):
+            if self.__file_manager_tree_view_model.itemFromIndex(current.parent()):
 
                 self.current_select_file_folder_item = current
                 self.current_select_file_folder = current.data()

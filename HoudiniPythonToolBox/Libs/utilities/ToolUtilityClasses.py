@@ -241,6 +241,7 @@ class ExceptionInfoWidgetClass(QtWidgets.QWidget):
     """
         Common Widget Class To Pop Message
     """
+
     def __init__(self):
         super(ExceptionInfoWidgetClass, self).__init__()
 
@@ -257,6 +258,7 @@ class HouNodesUtilities(QWidget):
     """
         Utilities Func For Working With Houdini Nodes
     """
+
     @classmethod
     def get_hou_network_pane_tab(cls) -> hou.paneTabType:
         """
