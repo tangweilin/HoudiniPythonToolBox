@@ -1,0 +1,1 @@
+"if( inpointgroup(0,'up',@ptnum))//\u5982\u679c\u70b9\u5728\u7ec4\u91cc,\u8fd4\u56de1,\u5426\u5219\u8fd4\u56de0\n       @Cd={0,1,0};\nelse\n       @Cd={1,0,0};\n       \n//\u7c7b\u4f3c\u7684\u51fd\u6570:inprimgroup(),invertexgroup().\u4e3b\u8981\u4f5c\u7528\u662f\u5224\u65ad\u5143\u7d20\u662f\u5426\u5728\u7ec4\u91cc"
