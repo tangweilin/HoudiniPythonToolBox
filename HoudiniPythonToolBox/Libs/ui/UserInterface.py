@@ -337,7 +337,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         label_remark.setFont(font)
 
         self.__node_preset_tab_label_remark = QtWidgets.QLabel('info')
-        self.__node_preset_tab_label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
+        self.__node_preset_tab_label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.__node_preset_tab_label_remark.setWordWrap(True)
         self.__node_preset_tab_label_remark.setMaximumSize(QtCore.QSize(180, 300))
 
@@ -708,6 +708,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__help_toolbar_btn.setEnabled(False)
             self.__file_location_toolbar_btn.setEnabled(False)
             self.__config_toolbar_btn.setEnabled(False)
+            self.__common_tool_node_add_btn.setEnabled(False)
         # current is min size
         else:
             self.setMaximumSize(QtCore.QSize(980, 730))
@@ -719,6 +720,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.__help_toolbar_btn.setEnabled(True)
             self.__file_location_toolbar_btn.setEnabled(True)
             self.__config_toolbar_btn.setEnabled(True)
+            self.__common_tool_node_add_btn.setEnabled(True)
 
     def search_text_in_list_widget(self, list_widget: QtWidgets.QListWidget, text: str) -> None:
         """
@@ -727,22 +729,21 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         :param text: Target Text
         """
         model = list_widget.model()
-        match = model.match(
-            model.index(0, list_widget.modelColumn()),
-            QtCore.Qt.DisplayRole,
-            text,
-            hits=1,
-            flags=QtCore.Qt.MatchStartsWith)
+        match = model.match(model.index(0, list_widget.modelColumn()), QtCore.Qt.DisplayRole, text,
+                            flags=QtCore.Qt.MatchContains)
         if match:
             list_widget.setCurrentIndex(match[0])
 
-    def search_item(self):
+    def search_item(self) -> None:
+        """
+            Search Current Text In Tree View, If Match Text, Select Current Item
+        """
         filter_text = self.__line_edit_filter.text()
         if filter_text:
             result = self.__file_manager_tree_view_model.findItems(filter_text,
-                                                          flags=QtCore.Qt.MatchExactly |
-                                                                QtCore.Qt.MatchRecursive |
-                                                                QtCore.Qt.MatchStartsWith)
+                                                                   flags=QtCore.Qt.MatchExactly |
+                                                                         QtCore.Qt.MatchRecursive |
+                                                                         QtCore.Qt.MatchStartsWith)
             for i in result:
                 item = self.__file_manager_tree_view_model.indexFromItem(i)
                 self.__file_manager_tree_view_widget.selectionModel().select(item, QtCore.QItemSelectionModel.Select)
