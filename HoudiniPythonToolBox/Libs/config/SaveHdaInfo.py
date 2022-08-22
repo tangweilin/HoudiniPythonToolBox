@@ -84,6 +84,8 @@ class SaveHdaInfo(QtWidgets.QWidget):
         self.hda_target_folder_combo_box.currentIndexChanged.connect(self.__change_hda_save_folder)
         self.hda_save_btn.clicked.connect(self.__save_hda_to_tool_preset)
 
+        self.__change_hda_save_folder()
+
     def __change_hda_file_path(self) -> None:
         hda_path = self.hda_file_path_combo_box.currentText()
         hda_file = os.listdir(hda_path)
@@ -98,3 +100,59 @@ class SaveHdaInfo(QtWidgets.QWidget):
 
     def __save_hda_to_tool_preset(self) -> None:
         current_select_items = self.hda_list_widget.selectedItems()
+        hda_target_folder = self.hda_target_folder_line_edit.text()
+        tool_hda_path = tool_path_manager.hda_path + '/' + hda_target_folder
+        if not os.path.exists(tool_hda_path):
+            os.mkdir(tool_hda_path)
+        tool_hda_path_files = os.listdir(tool_hda_path)
+        tool_hda_files = [x for x in tool_hda_path_files if
+                          x.split('.')[-1].lower() == 'hda' or x.split('.')[-1].lower() == 'otl']
+        hda_source_path = self.hda_file_path_combo_box.currentText()
+
+        if current_select_items:
+            for item in current_select_items:
+                hda_name = item.text()
+                hda_full_path = hda_source_path + '/' + hda_name
+                if hda_name in tool_hda_files:
+                    result = QtWidgets.QMessageBox.warning(self, 'replace', 'tool file have same name of hda , are '
+                                                                            'you want to replace?')
+                    if result == QtWidgets.QMessageBox.Yes:
+                        try:
+                            shutil.copy(hda_full_path, tool_hda_path)
+                            tool_hda_files.append(hda_name)
+                        except:
+                            tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
+                else:
+                    try:
+                        shutil.copy(hda_full_path, tool_hda_path)
+                        tool_hda_files.append(hda_name)
+                    except:
+                        tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
+
+            self.close()
+        else:
+            count = self.hda_list_widget.count()
+            if count > 0:
+                for i in range(count):
+                    item = self.hda_list_widget.item(i)
+                    hda_name = item.text()
+                    hda_full_path = hda_source_path + '/' + hda_name
+                    if hda_name in tool_hda_files:
+                        result = QtWidgets.QMessageBox.warning(self, 'replace', 'tool file have same name of hda , are '
+                                                                                'you want to replace?')
+                        if result == QtWidgets.QMessageBox.Yes:
+                            try:
+                                shutil.copy(hda_full_path, tool_hda_path)
+                                tool_hda_files.append(hda_name)
+                            except:
+                                tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
+                    else:
+                        try:
+                            shutil.copy(hda_full_path, tool_hda_path)
+                            tool_hda_files.append(hda_name)
+                        except:
+                            tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
+                self.close()
+
+    def closeEvent(self, event) -> None:
+        self.setParent(None)
