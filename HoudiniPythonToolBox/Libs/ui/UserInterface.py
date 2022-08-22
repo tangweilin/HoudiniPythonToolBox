@@ -6,7 +6,7 @@ import difflib
 import hou
 from PySide2 import QtCore, QtWidgets, QtGui
 
-from Libs.config import SaveVexPyNodeInfo, SaveNodePresetInfo, SaveFileManagerInfo, SaveCommonToolNodeInfo
+from Libs.config import SaveVexPyNodeInfo, SaveNodePresetInfo, SaveFileManagerInfo, SaveCommonToolNodeInfo, SaveHdaInfo
 from Libs.config import ToolConfigManager
 from Libs.path import ToolPathManager
 from Libs.ui import CustomLabel, CustomButton
@@ -21,6 +21,7 @@ reload(SaveVexPyNodeInfo)
 reload(SaveNodePresetInfo)
 reload(SaveFileManagerInfo)
 reload(SaveCommonToolNodeInfo)
+reload(SaveHdaInfo)
 reload(ToolUtilityClasses)
 
 tool_path_manager = ToolPathManager.ToolPath()
@@ -528,6 +529,18 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         hda_preset_tab_v_sub_layout.addLayout(hda_preset_tab_h_sub_layout)
         hda_preset_main_v_layout.addLayout(hda_preset_tab_v_sub_layout)
 
+        # connect
+        self.__hda_preset_tab_add_btn.clicked.connect(self.__hda_preset_tab_add_btn_clicked)
+
+    def __hda_preset_tab_add_btn_clicked(self):
+        main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
+        sub_window = main_window.findChild(QtWidgets.QWidget, 'savehdainfo')
+        if sub_window == None:
+            ex = SaveHdaInfo.SaveHdaInfo()
+            ex.setParent(self, QtCore.Qt.Window)
+            ex.show()
+        else:
+            tool_error_info.show_exception_info('warning', 'open savehdainfo window failed')
     def __create_common_tools_btn(self) -> None:
         """
             Create Tool Button To Grid Layout
