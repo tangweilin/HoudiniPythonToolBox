@@ -23,6 +23,9 @@ tool_config_manager = ToolConfigManager.ToolConfig
 
 
 class SaveHdaInfo(QtWidgets.QWidget):
+    """
+        Saving HDA Preset  Info To Tool Preset File
+    """
     def __init__(self):
         super(SaveHdaInfo, self).__init__()
         self.setWindowTitle('save hda info')
@@ -32,6 +35,10 @@ class SaveHdaInfo(QtWidgets.QWidget):
         self.__set_ui()
 
     def __get_all_hda_path(self) -> list:
+        """
+            Collect All HDA Path In Current Opened Houdini Version
+        :return:
+        """
         paths = []
         houdini_directory = hou.homeHoudiniDirectory()
         current_houdini_hda_path = houdini_directory + '/otls'
@@ -47,6 +54,10 @@ class SaveHdaInfo(QtWidgets.QWidget):
         return paths
 
     def __set_ui(self) -> None:
+        """
+            Main UI Layout
+        :return:
+        """
         hda_main_v_layout = QtWidgets.QVBoxLayout(self)
         hda_type_h_layout = QtWidgets.QHBoxLayout()
         hda_marker_h_layout = QtWidgets.QHBoxLayout()
@@ -99,6 +110,10 @@ class SaveHdaInfo(QtWidgets.QWidget):
         self.__change_hda_save_folder()
 
     def __change_hda_file_path(self) -> None:
+        """
+            Create HDA List Widget Item By Path
+        :return:
+        """
         hda_path = self.hda_file_path_combo_box.currentText()
         hda_file = os.listdir(hda_path)
         self.hda_list_widget.clear()
@@ -107,10 +122,18 @@ class SaveHdaInfo(QtWidgets.QWidget):
                 self.hda_list_widget.addItem(hda)
 
     def __change_hda_save_folder(self) -> None:
+        """
+            Change HDA Preset Save Path Type
+        :return:
+        """
         target_folder = self.hda_target_folder_combo_box.currentText()
         self.hda_target_folder_line_edit.setText(target_folder)
 
     def __save_hda_to_tool_preset(self) -> None:
+        """
+            Save Current Select HDA To Tool Preset File
+        :return:
+        """
         current_select_items = self.hda_list_widget.selectedItems()
         hda_target_folder = self.hda_target_folder_line_edit.text()
         tool_hda_path = tool_path_manager.hda_path + '/' + hda_target_folder
@@ -145,17 +168,18 @@ class SaveHdaInfo(QtWidgets.QWidget):
         else:
             tool_error_info.show_exception_info('warning', 'please select a hda to save')
 
-    def update_hda_screen_shot(self, current_item: QtWidgets.QListWidgetItem, path_type: str) -> None:
-        item_name = current_item.text()
-        hda_preset_path = tool_path_manager.hda_path + '/' + path_type
-        shot = ScreenShotTool.ScreenShotTool(item_name, hda_preset_path)
-        shot.show()
-
     def closeEvent(self, event) -> None:
+        """
+            Set Parent To None When Window Closed
+        :param event:
+        """
         self.setParent(None)
 
 
 class UpdateHdaMarker(QtWidgets.QWidget):
+    """
+        Update Current Select HDA Preset Marker Info
+    """
     def __init__(self, hda_name: str, path_type: str):
         super(UpdateHdaMarker, self).__init__()
         self.setWindowTitle('update hda marker')
@@ -167,6 +191,10 @@ class UpdateHdaMarker(QtWidgets.QWidget):
         self.path_type = path_type
 
     def __set_ui(self):
+        """
+            Main UI Layout
+        :return:
+        """
         main_v_layout = QtWidgets.QVBoxLayout(self)
         self.marker_label = QtWidgets.QLabel('Markers:')
         self.marker_text = QtWidgets.QPlainTextEdit()
@@ -180,6 +208,9 @@ class UpdateHdaMarker(QtWidgets.QWidget):
         self.marker_save_btn.clicked.connect(self.update_hda_marker_info)
 
     def update_hda_marker_info(self):
+        """
+            Update Marker Info By Path
+        """
         hda_preset_path = tool_path_manager.hda_path + '/' + self.path_type + '/' + self.hda_name + '.json'
         with open(hda_preset_path, 'w') as f:
             json.dump(self.marker_text.toPlainText(), f)
@@ -187,4 +218,8 @@ class UpdateHdaMarker(QtWidgets.QWidget):
         self.close()
 
     def closeEvent(self, event) -> None:
+        """
+            Set Parent To None When Window Closed
+        :param event:
+        """
         self.setParent(None)

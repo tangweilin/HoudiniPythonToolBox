@@ -538,6 +538,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__hda_preset_tab_combo_box_current_index_changed()
 
     def __hda_preset_tab_delete_btn_clicked(self) -> None:
+        """
+            Delete Current Select HDA Preset
+        :return:
+        """
         list_widget = self.__hda_preset_tab_list_widget
         current_items = list_widget.selectedItems()
         if current_items:
@@ -586,6 +590,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             tool_error_info.show_exception_info('warning', 'please select a hda preset to delete')
 
     def __hda_preset_tab_import_btn_clicked(self) -> None:
+        """
+            Import Current Select HDA To Houdini
+        :return:
+        """
         list_widget = self.__hda_preset_tab_list_widget
         item = list_widget.currentItem()
         current_hda_folder = self.__hda_preset_tab_combo_box.currentText()
@@ -628,7 +636,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
 
     def __hda_preset_tab_add_btn_clicked(self) -> None:
         """
-            add hda preset
+            Add HDA To Tool Preset
         :return:
         """
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
@@ -641,6 +649,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             tool_error_info.show_exception_info('warning', 'open savehdainfo window failed')
 
     def __load_hda_file_to_list_widget(self, path) -> None:
+        """
+            Create HDA Preset List Item With Specify Path
+        :param path: Current Path Type Of HDA Preset
+        :return:
+        """
         list_widget = self.__hda_preset_tab_list_widget
         all_files = os.listdir(path)
         all_files = [x for x in all_files if os.path.isfile(path + '/' + x)]
@@ -655,6 +668,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             # self.__allHdaItemNames.append(item_name)
 
     def __hda_preset_tab_combo_box_current_index_changed(self) -> None:
+        """
+            Refresh HDA Preset List Widget By Change Path Type
+        :return:
+        """
         current_hda_folder = self.__hda_preset_tab_combo_box.currentText()
         list_widget = self.__hda_preset_tab_list_widget
         list_widget.clear()
@@ -662,6 +679,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__load_hda_file_to_list_widget(hda_path)
 
     def __hda_preset_tab_update_screen_shot(self) -> None:
+        """
+            Update Current Select HDA Preset A Screen Shot
+        :return:
+        """
         item = self.__hda_preset_tab_list_widget.currentItem()
         current_folder = self.__hda_preset_tab_combo_box.currentText()
         if item:
@@ -671,6 +692,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             tool_error_info.show_exception_info('warning', 'please select a hda preset first')
 
     def __hda_preset_tab_update_marker_info(self) -> None:
+        """
+            Update Current Select HDA Preset Marker Info
+        :return:
+        """
         item = self.__hda_preset_tab_list_widget.currentItem()
         current_folder = self.__hda_preset_tab_combo_box.currentText()
         if item:
