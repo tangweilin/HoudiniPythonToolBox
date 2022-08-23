@@ -40,7 +40,7 @@ class SaveHdaInfo(QtWidgets.QWidget):
         c = hou.hda.loadedFiles()
         paths.append(current_houdini_hda_path)
         for hda_path in c:
-            if hda_path.find('SideFXLabs') == -1 and hda_path.find('PROGRA~1') == -1:
+            if hda_path.find('SideFXLabs') == -1 and hda_path.find('PROGRA~1') == -1 and hda_path.find('HDAPresets') == -1:
                 p = tool_path_manager.get_parent_path(hda_path)
                 if paths.count(p) == 0:
                     paths.append(p)
@@ -49,7 +49,7 @@ class SaveHdaInfo(QtWidgets.QWidget):
     def __set_ui(self) -> None:
         hda_main_v_layout = QtWidgets.QVBoxLayout(self)
         hda_type_h_layout = QtWidgets.QHBoxLayout()
-
+        hda_marker_h_layout = QtWidgets.QHBoxLayout()
         self.hda_file_path_combo_box = QtWidgets.QComboBox()
 
         all_hda_file_path = self.__get_all_hda_path()
@@ -72,11 +72,23 @@ class SaveHdaInfo(QtWidgets.QWidget):
         self.hda_save_btn = QtWidgets.QPushButton('save')
         tool_widget_utility_func.set_widget_icon(self.hda_save_btn, 'save_node.png')
 
+        marker_label = QtWidgets.QLabel()
+        marker_label.setText('marker:')
+        marker_label.setTextFormat(QtCore.Qt.AutoText)
+        marker_label.setAlignment(QtCore.Qt.AlignCenter)
+        marker_label.setFixedSize(80, 25)
+        self.marker_text_line_edit = QtWidgets.QPlainTextEdit()
+        self.marker_text_line_edit.setPlaceholderText('markers...')
+
+        # hda_marker_h_layout.addWidget(marker_label)
+        # hda_marker_h_layout.addWidget(self.marker_text_line_edit)
+
         hda_type_h_layout.addWidget(self.hda_target_folder_line_edit)
         hda_type_h_layout.addWidget(self.hda_target_folder_combo_box)
         hda_main_v_layout.addWidget(self.hda_file_path_combo_box)
         hda_main_v_layout.addWidget(self.hda_list_widget)
         hda_main_v_layout.addLayout(hda_type_h_layout)
+        hda_main_v_layout.addLayout(hda_marker_h_layout)
         hda_main_v_layout.addWidget(self.hda_save_btn)
 
         # connect
@@ -108,7 +120,6 @@ class SaveHdaInfo(QtWidgets.QWidget):
         tool_hda_files = [x for x in tool_hda_path_files if
                           x.split('.')[-1].lower() == 'hda' or x.split('.')[-1].lower() == 'otl']
         hda_source_path = self.hda_file_path_combo_box.currentText()
-
         if current_select_items:
             for item in current_select_items:
                 hda_name = item.text()
@@ -120,39 +131,60 @@ class SaveHdaInfo(QtWidgets.QWidget):
                         try:
                             shutil.copy(hda_full_path, tool_hda_path)
                             tool_hda_files.append(hda_name)
+                            tool_error_info.show_exception_info('message', 'save hda to tool preset success')
                         except:
                             tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
                 else:
                     try:
                         shutil.copy(hda_full_path, tool_hda_path)
                         tool_hda_files.append(hda_name)
+                        tool_error_info.show_exception_info('message', 'save hda to tool preset success')
                     except:
                         tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
-
             self.close()
         else:
-            count = self.hda_list_widget.count()
-            if count > 0:
-                for i in range(count):
-                    item = self.hda_list_widget.item(i)
-                    hda_name = item.text()
-                    hda_full_path = hda_source_path + '/' + hda_name
-                    if hda_name in tool_hda_files:
-                        result = QtWidgets.QMessageBox.warning(self, 'replace', 'tool file have same name of hda , are '
-                                                                                'you want to replace?')
-                        if result == QtWidgets.QMessageBox.Yes:
-                            try:
-                                shutil.copy(hda_full_path, tool_hda_path)
-                                tool_hda_files.append(hda_name)
-                            except:
-                                tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
-                    else:
-                        try:
-                            shutil.copy(hda_full_path, tool_hda_path)
-                            tool_hda_files.append(hda_name)
-                        except:
-                            tool_error_info.show_exception_info('warning', 'copy {} hda got wrong'.format(hda_name))
-                self.close()
+            tool_error_info.show_exception_info('warning', 'please select a hda to save')
+
+    def update_hda_screen_shot(self, current_item: QtWidgets.QListWidgetItem, path_type: str) -> None:
+        item_name = current_item.text()
+        hda_preset_path = tool_path_manager.hda_path + '/' + path_type
+        shot = ScreenShotTool.ScreenShotTool(item_name, hda_preset_path)
+        shot.show()
+
+    def closeEvent(self, event) -> None:
+        self.setParent(None)
+
+
+class UpdateHdaMarker(QtWidgets.QWidget):
+    def __init__(self, hda_name: str, path_type: str):
+        super(UpdateHdaMarker, self).__init__()
+        self.setWindowTitle('update hda marker')
+        self.setObjectName('updatehdamarker')
+        self.setGeometry(900, 700, 300, 150)
+        tool_widget_utility_func.set_widget_to_center_desktop(self)
+        self.__set_ui()
+        self.hda_name = hda_name
+        self.path_type = path_type
+
+    def __set_ui(self):
+        main_v_layout = QtWidgets.QVBoxLayout(self)
+        self.marker_label = QtWidgets.QLabel('Markers:')
+        self.marker_text = QtWidgets.QPlainTextEdit()
+        self.marker_text.setPlaceholderText('Markers...')
+        self.marker_save_btn = QtWidgets.QPushButton('save')
+        tool_widget_utility_func.set_widget_icon(self.marker_save_btn, 'save_node.png')
+        main_v_layout.addWidget(self.marker_label)
+        main_v_layout.addWidget(self.marker_text)
+        main_v_layout.addWidget(self.marker_save_btn)
+
+        self.marker_save_btn.clicked.connect(self.update_hda_marker_info)
+
+    def update_hda_marker_info(self):
+        hda_preset_path = tool_path_manager.hda_path + '/' + self.path_type + '/' + self.hda_name + '.json'
+        with open(hda_preset_path, 'w') as f:
+            json.dump(self.marker_text.toPlainText(), f)
+        tool_error_info.show_exception_info('message', 'update info success')
+        self.close()
 
     def closeEvent(self, event) -> None:
         self.setParent(None)

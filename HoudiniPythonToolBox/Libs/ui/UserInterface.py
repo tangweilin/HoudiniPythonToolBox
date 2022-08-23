@@ -452,10 +452,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         """
         hda_preset_main_v_layout = QtWidgets.QVBoxLayout(self.__hda_tab)
         hda_preset_main_h_layout = QtWidgets.QHBoxLayout()
+        hda_preset_sub_v_layout = QtWidgets.QVBoxLayout()
 
         self.__hda_preset_tab_add_btn = QtWidgets.QPushButton('add hda')
         self.__hda_preset_tab_import_btn = QtWidgets.QPushButton('import hda')
-        self.__hda_preset_tab_update_info_btn = QtWidgets.QPushButton('update hda info')
+        self.__hda_preset_tab_update_info_btn = QtWidgets.QPushButton('update hda marker')
         self.__hda_preset_tab_update_image_btn = QtWidgets.QPushButton('update hda image')
         self.__hda_preset_tab_delete_btn = QtWidgets.QPushButton('delete hda')
 
@@ -466,6 +467,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         tool_widget_utility_func.set_widget_icon(self.__hda_preset_tab_delete_btn, 'delete_btn')
 
         self.__hda_preset_tab_list_widget = QtWidgets.QListWidget()
+        self.__hda_preset_tab_combo_box = QtWidgets.QComboBox()
+        all_hda_file = os.listdir(tool_path_manager.hda_path)
+        all_hda_folder = [x for x in all_hda_file if os.path.isdir(os.path.join(tool_path_manager.hda_path, x))]
+        for folder in all_hda_folder:
+            self.__hda_preset_tab_combo_box.addItem(folder)
 
         # screen shot
         self.__hda_preset_tab_screen_shot_label = CustomLabel.CustomLabel()
@@ -478,19 +484,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__hda_preset_tab_screen_shot_label.setWordWrap(True)
 
         # label
-        label_name = QtWidgets.QLabel('Author:')
-        label_name.setMaximumSize(QtCore.QSize(180, 17))
-        label_name.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        label_name.setStyleSheet('color:rgb(255,255,0)')
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        label_name.setFont(font)
 
-        self.__hda_preset_tab_label_name = QtWidgets.QLabel('')
-        self.__hda_preset_tab_label_name.setMaximumSize(QtCore.QSize(180, 17))
-        self.__hda_preset_tab_label_name.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-
-        label_remark = QtWidgets.QLabel('remark:')
+        label_remark = QtWidgets.QLabel('marker:')
         label_remark.setMaximumSize(QtCore.QSize(180, 17))
         label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         label_remark.setStyleSheet('color:rgb(255,255,0)')
@@ -499,7 +494,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         label_remark.setFont(font)
 
         self.__hda_preset_tab_label_remark = QtWidgets.QLabel('info')
-        self.__hda_preset_tab_label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
+        self.__hda_preset_tab_label_remark.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.__hda_preset_tab_label_remark.setWordWrap(True)
         self.__hda_preset_tab_label_remark.setMaximumSize(QtCore.QSize(180, 300))
 
@@ -516,31 +511,206 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         hda_preset_tab_h_label_layout = QtWidgets.QHBoxLayout()
         hda_preset_tab_v_label_layout = QtWidgets.QVBoxLayout()
 
-        hda_preset_tab_h_label_layout.addWidget(label_name)
-        hda_preset_tab_h_label_layout.addWidget(self.__hda_preset_tab_label_name)
         hda_preset_tab_h_label_layout.addWidget(label_remark)
         hda_preset_tab_h_label_layout.addWidget(self.__hda_preset_tab_label_remark)
         hda_preset_tab_v_label_layout.addWidget(self.__hda_preset_tab_screen_shot_label)
         hda_preset_tab_v_label_layout.addLayout(hda_preset_tab_h_label_layout)
 
         hda_preset_main_v_layout.addLayout(hda_preset_main_h_layout)
-        hda_preset_tab_h_sub_layout.addWidget(self.__hda_preset_tab_list_widget)
+
+        hda_preset_sub_v_layout.addWidget(self.__hda_preset_tab_combo_box)
+        hda_preset_sub_v_layout.addWidget(self.__hda_preset_tab_list_widget)
+
+        hda_preset_tab_h_sub_layout.addLayout(hda_preset_sub_v_layout)
         hda_preset_tab_h_sub_layout.addLayout(hda_preset_tab_v_label_layout)
         hda_preset_tab_v_sub_layout.addLayout(hda_preset_tab_h_sub_layout)
         hda_preset_main_v_layout.addLayout(hda_preset_tab_v_sub_layout)
 
         # connect
         self.__hda_preset_tab_add_btn.clicked.connect(self.__hda_preset_tab_add_btn_clicked)
+        self.__hda_preset_tab_list_widget.itemClicked.connect(self.__hda_preset_tab_list_widget_item_clicked)
+        self.__hda_preset_tab_combo_box.currentIndexChanged.connect(
+            self.__hda_preset_tab_combo_box_current_index_changed)
+        self.__hda_preset_tab_update_image_btn.clicked.connect(self.__hda_preset_tab_update_screen_shot)
+        self.__hda_preset_tab_update_info_btn.clicked.connect(self.__hda_preset_tab_update_marker_info)
+        self.__hda_preset_tab_import_btn.clicked.connect(self.__hda_preset_tab_import_btn_clicked)
+        self.__hda_preset_tab_delete_btn.clicked.connect(self.__hda_preset_tab_delete_btn_clicked)
+        self.__hda_preset_tab_combo_box_current_index_changed()
 
-    def __hda_preset_tab_add_btn_clicked(self):
+    def __hda_preset_tab_delete_btn_clicked(self) -> None:
+        list_widget = self.__hda_preset_tab_list_widget
+        current_items = list_widget.selectedItems()
+        if current_items:
+            current_hda_folder = self.__hda_preset_tab_combo_box.currentText()
+            result = QtWidgets.QMessageBox.warning(self, "warning",
+                                                   "are you want to delete select hda presets? ",
+                                                   QtWidgets.QMessageBox.Yes |
+                                                   QtWidgets.QMessageBox.No)
+            if result == QtWidgets.QMessageBox.Yes:
+                for item in current_items:
+                    hda_path = tool_path_manager.hda_path
+                    hda_name = item.text()
+                    full_hda_path = hda_path + '/' + current_hda_folder + '/' + hda_name + '.hda'
+                    full_hda_path_otl = hda_path + '/' + current_hda_folder + '/' + hda_name + '.otl'
+                    full_hda_image_path = hda_path + '/' + current_hda_folder + '/' + hda_name + '.jpg'
+                    full_hda_json_path = hda_path + '/' + current_hda_folder + '/' + hda_name + '.json'
+
+                    list_widget.takeItem(list_widget.row(item))
+
+                    try:
+                        hou.hda.uninstallFile(full_hda_path)
+                        hou.hda.uninstallFile(full_hda_path_otl)
+                    except:
+                        tool_error_info.show_exception_info('warning',
+                                                            'uninstall {} hda file may got wrong'.format(hda_name))
+                    try:
+                        os.remove(full_hda_path)
+                    except:
+                        try:
+                            os.remove(full_hda_path_otl)
+                        except:
+                            tool_error_info.show_exception_info('warning',
+                                                                'del {} hda file may got wrong'.format(hda_name))
+                    try:
+                        os.remove(full_hda_image_path)
+                    except:
+                        tool_error_info.show_exception_info('warning',
+                                                            'del {} hda screen shot may got wrong'.format(hda_name))
+                    try:
+                        os.remove(full_hda_json_path)
+                    except:
+                        tool_error_info.show_exception_info('warning',
+                                                            'del {} hda json file may got wrong'.format(hda_name))
+
+        else:
+            tool_error_info.show_exception_info('warning', 'please select a hda preset to delete')
+
+    def __hda_preset_tab_import_btn_clicked(self) -> None:
+        list_widget = self.__hda_preset_tab_list_widget
+        item = list_widget.currentItem()
+        current_hda_folder = self.__hda_preset_tab_combo_box.currentText()
+        if item:
+            hda_path = tool_path_manager.hda_path + '/' + current_hda_folder
+            hda_name = item.text()
+            hda_full_path = hda_path + '/' + hda_name + '.hda'
+            hda_full_path_otl = hda_path + '/' + hda_name + 'otl'
+            installed = 0
+            tab_name = None
+            try:
+                hou.hda.installFile(hda_full_path)
+                info = hou.hda.definitionsInFile(hda_full_path)
+                tab_name = info[0].nodeTypeName()
+                installed = 1
+            except:
+                installed = 0
+            if not installed:
+                try:
+                    hou.hda.installFile(hda_full_path_otl)
+                    info = hou.hda.definitionsInFile(hda_full_path_otl)
+                    tab_name = info[0].nodeTypeName()
+                    installed = 1
+                except:
+                    installed = 0
+
+            if installed == 1 and tab_name:
+                plan = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+                pos = plan.selectPosition()
+                upNode = plan.pwd()
+                try:
+                    hdaNode = upNode.createNode(tab_name)
+                    hdaNode.setPosition(pos)
+                except:
+                    QtWidgets.QMessageBox.about(self, 'waring', 'hda create pane tab type is wrong')
+            else:
+                QtWidgets.QMessageBox.about(self, 'waring', 'hda create pane tab type is wrong')
+        else:
+            QtWidgets.QMessageBox.about(self, 'waring', 'please select a hda preset first')
+
+    def __hda_preset_tab_add_btn_clicked(self) -> None:
+        """
+            add hda preset
+        :return:
+        """
         main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
         sub_window = main_window.findChild(QtWidgets.QWidget, 'savehdainfo')
-        if sub_window == None:
+        if sub_window is None:
             ex = SaveHdaInfo.SaveHdaInfo()
             ex.setParent(self, QtCore.Qt.Window)
             ex.show()
         else:
             tool_error_info.show_exception_info('warning', 'open savehdainfo window failed')
+
+    def __load_hda_file_to_list_widget(self, path) -> None:
+        list_widget = self.__hda_preset_tab_list_widget
+        all_files = os.listdir(path)
+        all_files = [x for x in all_files if os.path.isfile(path + '/' + x)]
+        hda_files = [x for x in all_files if
+                     x.split('.')[-1].lower().startswith('hda') or x.split('.')[-1].lower().startswith('otl')]
+        for file in hda_files:
+            item_name = '.'.join(file.split('.')[:-1])
+            item = QtWidgets.QListWidgetItem()
+            item.setText(item_name)
+            item.setSizeHint(QtCore.QSize(200, 30))
+            list_widget.addItem(item)
+            # self.__allHdaItemNames.append(item_name)
+
+    def __hda_preset_tab_combo_box_current_index_changed(self) -> None:
+        current_hda_folder = self.__hda_preset_tab_combo_box.currentText()
+        list_widget = self.__hda_preset_tab_list_widget
+        list_widget.clear()
+        hda_path = tool_path_manager.hda_path + '/' + current_hda_folder
+        self.__load_hda_file_to_list_widget(hda_path)
+
+    def __hda_preset_tab_update_screen_shot(self) -> None:
+        item = self.__hda_preset_tab_list_widget.currentItem()
+        current_folder = self.__hda_preset_tab_combo_box.currentText()
+        if item:
+            save_hda_info = SaveHdaInfo.SaveHdaInfo()
+            save_hda_info.update_hda_screen_shot(item, current_folder)
+        else:
+            tool_error_info.show_exception_info('warning', 'please select a hda preset first')
+
+    def __hda_preset_tab_update_marker_info(self) -> None:
+        item = self.__hda_preset_tab_list_widget.currentItem()
+        current_folder = self.__hda_preset_tab_combo_box.currentText()
+        if item:
+            main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
+            sub_window = main_window.findChild(QtWidgets.QWidget, 'updatehdamarker')
+            if sub_window is None:
+                ex = SaveHdaInfo.UpdateHdaMarker(hda_name=item.text(), path_type=current_folder)
+                ex.setParent(self, QtCore.Qt.Window)
+                ex.show()
+            else:
+                tool_error_info.show_exception_info('warning', 'open savehdainfo window failed')
+        else:
+            tool_error_info.show_exception_info('warning', 'please select a hda preset first')
+
+    def __hda_preset_tab_list_widget_item_clicked(self) -> None:
+        """
+            hda preset list widget item clicked
+        :param item:
+        :return:
+        """
+        list_widget = self.__hda_preset_tab_list_widget
+        current_item = list_widget.currentItem()
+        if current_item:
+            current_hda_folder = self.__hda_preset_tab_combo_box.currentText()
+            hda_path = tool_path_manager.hda_path
+            hda_name = current_item.text()
+            image_path = hda_path + '/' + current_hda_folder + '/' + hda_name + '.jpg'
+            if os.path.isfile(image_path):
+                self.__hda_preset_tab_screen_shot_label.setPixmap(QtGui.QPixmap(image_path))
+            else:
+                self.__hda_preset_tab_screen_shot_label.setText(hda_name)
+            json_path = hda_path + '/' + current_hda_folder + '/' + hda_name + '.json'
+            marker_info = ''
+            if os.path.isfile(json_path):
+                with open(json_path, 'r') as f:
+                    marker_info = json.load(f)
+            else:
+                marker_info = ''
+            self.__hda_preset_tab_label_remark.setText(marker_info)
+
     def __create_common_tools_btn(self) -> None:
         """
             Create Tool Button To Grid Layout
@@ -669,7 +839,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         elif main_tab_index == 1:  # node presets tab
             self.__setup_node_preset_tab_list_widget_info()
         elif main_tab_index == 2:  # hda presets tab
-            pass
+            self.__hda_preset_tab_combo_box_current_index_changed()
         elif main_tab_index == 3:  # common tools tab
             self.__setup_common_tools_tab_widget_layout()
         elif main_tab_index == 4:  # file manager tab
@@ -776,7 +946,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             self.search_text_in_list_widget(self.__node_preset_tab_list_widget, self.__line_edit_filter.text())
             self.__on_node_preset_tab_list_selection_change()
         elif main_tab_index == 2:  # hda preset tab
-            pass
+            self.search_text_in_list_widget(self.__hda_preset_tab_list_widget, self.__line_edit_filter.text())
+            self.__hda_preset_tab_list_widget_item_clicked()
         elif main_tab_index == 4:  # file manager tab
             self.search_item()
 
