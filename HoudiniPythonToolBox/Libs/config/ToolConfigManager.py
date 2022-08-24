@@ -1,13 +1,15 @@
 import json
 from Libs.path import ToolPathManager
 from imp import reload
+from PySide2 import QtCore, QtGui, QtWidgets
 from Libs.utilities import ToolUtilityClasses
 
 reload(ToolPathManager)
 reload(ToolUtilityClasses)
 
+tool_widget_utility_func = ToolUtilityClasses.SetWidgetInfo
 tool_path_manager = ToolPathManager.ToolPath()
-tool_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass
+tool_error_info = ToolUtilityClasses.ExceptionInfoWidgetClass()
 
 
 class ToolConfig:
@@ -54,3 +56,37 @@ class ToolConfig:
                 json.dump(info, f)
         except:
             tool_error_info.show_exception_info('warning', 'dump json info got wrong file: %s' % path)
+
+
+class QSSLoader:
+    """
+        Class To Load QSS
+    """
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def read_qss_file(qss_file_name):
+        """
+            Load QSS File By Name
+        :param qss_file_name:
+        :return:
+        """
+        with open(qss_file_name, 'r', encoding='UTF-8') as file:
+            return file.read()
+
+
+class ToolConfigManager(QtWidgets.QWidget):
+    """
+        Tool Config UI Class
+    """
+    def __init__(self):
+        super(ToolConfigManager, self).__init__()
+        self.setWindowTitle('config')
+        self.setObjectName('toolconfig')
+        self.setGeometry(900, 700, 600, 500)
+        tool_widget_utility_func.set_widget_to_center_desktop(self)
+        self.__set_ui()
+
+    def __set_ui(self)->None:
+        pass

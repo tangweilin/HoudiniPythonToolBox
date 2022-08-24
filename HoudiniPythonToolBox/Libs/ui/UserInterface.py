@@ -1,7 +1,6 @@
 import json
 import os
 from imp import reload
-import difflib
 
 import hou
 from PySide2 import QtCore, QtWidgets, QtGui
@@ -11,6 +10,7 @@ from Libs.config import ToolConfigManager
 from Libs.path import ToolPathManager
 from Libs.ui import CustomLabel, CustomButton
 from Libs.utilities import ToolUtilityClasses
+# from qt_material import apply_stylesheet
 import webbrowser
 
 reload(ToolPathManager)
@@ -875,7 +875,16 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             Modify Tool Configs
         :return:
         """
-        tool_error_info.show_exception_info('abort', 'this tool is not done yet, please use other tool button')
+        main_window = hou.qt.mainWindow().findChild(QtWidgets.QMainWindow, 'toolbox')
+        sub_window = main_window.findChild(QtWidgets.QWidget, 'toolconfig')
+        if sub_window is None:
+            ex = ToolConfigManager.ToolConfigManager()
+            ex.setParent(self, QtCore.Qt.Window)
+            # style_file = './style.qss'
+            # style_sheet = ToolConfigManager.QSSLoader.read_qss_file(style_file)
+            # ex.setStyleSheet(style_sheet)
+            # apply_stylesheet(ex, theme='dark_teal.xml')
+            ex.show()
 
     def __on_file_location_toolbar_btn_clicked(self) -> None:
         """
