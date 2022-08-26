@@ -392,6 +392,10 @@ class HouNodesUtilities(QWidget):
 
 
 class CheckableComboBox(QtWidgets.QComboBox):
+    """
+        Checkable ComboBox Widget Support Multi Select Option With CheckBox
+    """
+
     def __init__(self):
         super().__init__()
         self.setEditable(True)
@@ -400,10 +404,16 @@ class CheckableComboBox(QtWidgets.QComboBox):
         self.lineEdit().installEventFilter(self)
 
         self.view().viewport().installEventFilter(self)
-        self.model().dataChanged.connect(self.updateLineEditField)
+        self.model().dataChanged.connect(self.update_line_edit_field)
         self.lineEdit().setText('')
 
     def eventFilter(self, widget: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        """
+            Event Filter For Widget
+        :param widget: Widget To Filter
+        :param event: Event To Filter
+        :return: Bool
+        """
         if widget == self.lineEdit():
             if event.type() == QEvent.MouseButtonRelease:
                 if self.closeOnLineEditClick:
@@ -426,10 +436,16 @@ class CheckableComboBox(QtWidgets.QComboBox):
             return super().eventFilter(widget, event)
 
     def hidePopup(self) -> None:
+        """
+            Hide Popup Widget
+        """
         super().hidePopup()
         self.startTimer(100)
 
-    def updateLineEditField(self):
+    def update_line_edit_field(self):
+        """
+            Update LineEdit Field When Model Data Changed
+        """
         text_container = []
         for i in range(self.model().rowCount()):
             if self.model().item(i).checkState() == QtCore.Qt.Checked:
@@ -437,8 +453,12 @@ class CheckableComboBox(QtWidgets.QComboBox):
         text_string = ', '.join(text_container)
         self.lineEdit().setText(text_string)
 
-
     def addItems(self, items, itemList=None) -> None:
+        """
+            Add Item List To ComboBox
+        :param items: Target Item List
+        :param itemList:
+        """
         for index, text in enumerate(items):
             try:
                 data = itemList[index]
@@ -446,7 +466,12 @@ class CheckableComboBox(QtWidgets.QComboBox):
                 data = None
             self.addItem(text, data)
 
-    def addItem(self, text, userData=None):
+    def addItem(self, text, userData=None) -> None:
+        """
+            Add Item To ComboBox
+        :param text:  Item Text
+        :param userData:  Item UserData
+        """
         item = QStandardItem()
         item.setText(text)
         if userData is not None:
