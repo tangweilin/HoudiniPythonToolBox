@@ -8,6 +8,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from Libs.path import ToolPathManager
+from typing import Dict, List
 from imp import reload
 
 reload(ToolPathManager)
@@ -61,19 +62,29 @@ class SetWidgetInfo(QtWidgets.QWidget):
         widget.setFixedSize(size_x, size_y)
 
     @classmethod
-    def add_code_info_to_list_widget(cls, list_widget, path='') -> None:
+    def add_code_info_to_list_widget(cls, list_widget: QtWidgets.QListWidgetItem, path: str = '') -> List[Dict]:
         """
             Show ListWidget Item Info By Path
         :param list_widget: Current ListWidget
         :param path:  Info Path
-        :return: ListWidget
+        :return: List Of Tag Info
         """
         all_files = os.listdir(path)
         files = [x for x in all_files if x.split('.')[(-1)].lower().startswith('json')]
+
+        dict_arr = []
         for file in files:
+            result_dict = {}
             item_name = file.split('.')[0]
             item = QtWidgets.QListWidgetItem(list_widget)
+            json_path = path + '/' + file
+            with open(json_path, 'r') as f:
+                file_info = json.load(f)
+            result_dict['item_name'] = item_name
+            result_dict['item_tag'] = file_info['tag']
+            dict_arr.append(result_dict)
             item.setText(item_name)
+        return dict_arr
 
     @classmethod
     def add_node_preset_info_to_list_widget(cls, list_widget, path='', node_class_type='') -> None:
@@ -144,13 +155,16 @@ class SetWidgetInfo(QtWidgets.QWidget):
         if current_item:
             file = current_item.text()
             code_file_path = path + '/' + file + '.json'
-            info = ''
+            code_info = ''
+            code_tag = ''
             try:
                 with open(code_file_path, 'r') as (f):
                     info = json.load(f)
+                code_tag = info['tag']
+                code_info = info['info']
             except:
                 print('read code info got error , path : %s' % path)
-            return file, info
+            return file, code_info, code_tag
 
     @classmethod
     def get_current_code_path_by_combo_box_index(cls, combo_box_index) -> str:
@@ -374,4 +388,3 @@ class HouNodesUtilities(QWidget):
                 tool_error_info.show_exception_info('error', 'please select node to update')
         else:
             tool_error_info.show_exception_info('error', 'please select current node to update')
-

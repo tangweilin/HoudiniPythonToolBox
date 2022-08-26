@@ -1,0 +1,1 @@
+{"tag": ["attribute", "utility", "root"], "info": "int match_pt = findattribval(1,\"point\",\"id\",@id,0);\nif(match_pt>-1)\n{\n    removepoint(0,@ptnum,1);\n}"}
