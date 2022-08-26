@@ -5,8 +5,9 @@ import re
 
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
+from PySide2.QtGui import QStandardItem
+from PySide2.QtCore import QEvent
+
 from Libs.path import ToolPathManager
 from typing import Dict, List
 from imp import reload
@@ -388,3 +389,70 @@ class HouNodesUtilities(QWidget):
                 tool_error_info.show_exception_info('error', 'please select node to update')
         else:
             tool_error_info.show_exception_info('error', 'please select current node to update')
+
+
+class CheckableComboBox(QtWidgets.QComboBox):
+    def __init__(self):
+        super().__init__()
+        self.setEditable(True)
+        self.lineEdit().setReadOnly(True)
+        self.closeOnLineEditClick = False
+        self.lineEdit().installEventFilter(self)
+
+        self.view().viewport().installEventFilter(self)
+        self.model().dataChanged.connect(self.updateLineEditField)
+        self.lineEdit().setText('')
+
+    def eventFilter(self, widget: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if widget == self.lineEdit():
+            if event.type() == QEvent.MouseButtonRelease:
+                if self.closeOnLineEditClick:
+                    self.hidePopup()
+                else:
+                    self.showPopup()
+                return True
+            return super().eventFilter(widget, event)
+
+        if widget == self.view().viewport():
+            if event.type() == QEvent.MouseButtonRelease:
+                index = self.view().indexAt(event.pos())
+                item = self.model().item(index.row())
+
+                if item.checkState() == QtCore.Qt.Checked:
+                    item.setCheckState(QtCore.Qt.Unchecked)
+                else:
+                    item.setCheckState(QtCore.Qt.Checked)
+                return True
+            return super().eventFilter(widget, event)
+
+    def hidePopup(self) -> None:
+        super().hidePopup()
+        self.startTimer(100)
+
+    def updateLineEditField(self):
+        text_container = []
+        for i in range(self.model().rowCount()):
+            if self.model().item(i).checkState() == QtCore.Qt.Checked:
+                text_container.append(self.model().item(i).text())
+        text_string = ', '.join(text_container)
+        self.lineEdit().setText(text_string)
+
+
+    def addItems(self, items, itemList=None) -> None:
+        for index, text in enumerate(items):
+            try:
+                data = itemList[index]
+            except(TypeError, IndexError):
+                data = None
+            self.addItem(text, data)
+
+    def addItem(self, text, userData=None):
+        item = QStandardItem()
+        item.setText(text)
+        if userData is not None:
+            item.setData(userData)
+
+        # enable checkbox setting
+        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
+        item.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
+        self.model().appendRow(item)

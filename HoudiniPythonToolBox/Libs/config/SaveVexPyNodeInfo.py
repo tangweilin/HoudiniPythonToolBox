@@ -93,10 +93,17 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
         self.on_code_tag_combo_box_changed()
 
     def code_name_changed(self) -> None:
+        """
+            If Code Name Changed  Blame New Name And Old Name To Decide Need Delete Old Json File
+        """
         if self.update_flag and self.old_json_name:
             self.need_del = self.old_json_name is not self.code_name_line_edit.text()
 
     def get_all_code_tag_list(self) -> List[str]:
+        """
+            Get All Code Tag List By Json File Info
+        :return:
+        """
         code_preset_info_path = tool_path_manager.code_preset_path + '/CodePresetsInfo.json'
         tag_list = []
         if os.path.exists(code_preset_info_path):
@@ -109,6 +116,9 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
         return tag_list
 
     def on_code_tag_combo_box_changed(self) -> None:
+        """
+            Set Current Select Tag
+        """
         if self.code_tag_multi_check_box.isChecked():
             current_tag_text = self.code_tag_line_edit.text()
             combo_text = self.code_tag_choose_combo_box.currentText()
@@ -150,6 +160,10 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                 self.code_tag_line_edit.setText('root')
 
     def save_tag_to_json_info(self, tags: str) -> None:
+        """
+            Save Current Tag Dict To Json File
+        :param tags: Current Tag List
+        """
         tag_list = self.get_all_code_tag_list()
         if tag_list:
             for tag in tags:
@@ -164,6 +178,9 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                         json.dump(json_tag_dict, f)
 
     def del_old_json(self) -> None:
+        """
+            If New Update Json Name Is Not Equal Old Name, Delete Old Json
+        """
         if self.need_del and self.update_flag and self.old_json_name:
             code_type_index = self.code_type_choose_combo_box.currentIndex()
             if code_type_index == 0:
