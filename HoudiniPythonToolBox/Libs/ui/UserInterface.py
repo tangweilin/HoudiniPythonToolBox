@@ -276,7 +276,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         vex_py_tab_v_sub_layout_1.addWidget(self.__vex_py_tab_code_tag)
 
         vex_py_tab_v_sub_layout_1.addWidget(self.__vex_py_tab_list_widget)
-        # vex_py_tab_v_sub_layout_1.addWidget(self.__test_checked_combo_box)
+        vex_py_tab_v_sub_layout_1.addWidget(self.__test_checked_combo_box)
         vex_py_tab_h_sub_layout.addLayout(vex_py_tab_v_sub_layout_1)
 
         vex_py_tab_h_layout.addWidget(self.__vex_py_tab_add_btn)

@@ -168,6 +168,18 @@ class SaveHdaInfo(QtWidgets.QWidget):
         else:
             tool_error_info.show_exception_info('warning', 'please select a hda to save')
 
+    def update_hda_screen_shot(self, current_item: QtWidgets.QListWidgetItem, path_type: str) -> None:
+        """
+            Update HDA Screen Shot By Path
+        :param current_item:    current select item
+        :param path_type:    hda preset path type
+        :return:    None
+        """
+        item_name = current_item.text()
+        hda_preset_path = tool_path_manager.hda_path + '/' + path_type
+        shot = ScreenShotTool.ScreenShotTool(item_name, hda_preset_path)
+        shot.show()
+
     def closeEvent(self, event) -> None:
         """
             Set Parent To None When Window Closed

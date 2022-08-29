@@ -213,78 +213,36 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
             if len(tag) != 0:
                 code_tag.append(tag)
         code_path = None
-
+        run_over_class = 2
         if node_code_name_info:
-
-            # if have code text
-            if node_code_text_info:
-                code_info_dict = {
-                    "tag": code_tag,
-                    "info": node_code_text_info
-                }
-                if code_type_index == 0:
-                    code_path = tool_path_manager.vex_codes_path
-                else:
-                    code_path = tool_path_manager.python_codes_path
-                all_files = os.listdir(code_path)
-                code_files = [x for x in all_files if x.split('.')[-1].lower() == 'json']
-
-                # replace
-                if node_code_name_info + '.json' in code_files:
-                    replace_result = QtWidgets.QMessageBox.warning(self,
-                                                                   'Replacing',
-                                                                   'have same name node, are you sure to replace?',
-                                                                   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-                    if replace_result == QtWidgets.QMessageBox.Yes:
-                        with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
-                            json.dump(code_info_dict, f)
-                        self.save_tag_to_json_info(code_tag)
-                        tool_error_info.show_exception_info('message', 'Save Code Success.')
-                        self.del_old_json()
-                        self.close()
-                else:
-                    with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
-                        json.dump(code_info_dict, f)
-                        self.save_tag_to_json_info(code_tag)
-                        tool_error_info.show_exception_info('message', 'Save Code Success.')
-                        self.del_old_json()
-                        self.close()
-
+            current_node = self.get_select_node()
             # if select houdini code node
-            else:
-                current_node = self.get_select_node()
-                if current_node:
-                    current_node_name = current_node.type().name()
-                    code_type = self.code_type_choose_combo_box.currentIndex()
+            if current_node:
+                current_node_name = current_node.type().name()
+                self.code_type_choose_combo_box.currentIndex()
 
-                    # if select python node
-                    if node_code_name_info and current_node_name == 'python':
-                        codes = current_node.parm('python').rawValue()
+                # if select python node
+                if current_node_name == 'python':
+                    codes = current_node.parm('python').rawValue()
+                    run_over_class = current_node.parm('class').eval()
+                    # if select node have code text
+                    if codes:
+                        code_info_dict = {
+                            "tag": code_tag,
+                            "class": run_over_class,
+                            "info": codes
+                        }
+                        code_path = tool_path_manager.python_codes_path
+                        all_files = os.listdir(code_path)
+                        code_files = [x for x in all_files if x.split('.')[-1].lower() == 'json']
 
-                        # if select node have code text
-                        if codes:
-                            code_info_dict = {
-                                "tag": code_tag,
-                                "info": codes
-                            }
-                            code_path = tool_path_manager.python_codes_path
-                            all_files = os.listdir(code_path)
-                            code_files = [x for x in all_files if x.split('.')[-1].lower() == 'json']
-
-                            # replace
-                            if node_code_name_info + '.json' in code_files:
-                                replace_result = QtWidgets.QMessageBox.warning(self,
-                                                                               'Replacing',
-                                                                               'have same name node, are you sure to replace?',
-                                                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-                                if replace_result == QtWidgets.QMessageBox.Yes:
-                                    with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
-                                        json.dump(code_info_dict, f)
-                                    self.save_tag_to_json_info(code_tag)
-                                    tool_error_info.show_exception_info('message', 'Save Code Success.')
-                                    self.del_old_json()
-                                    self.close()
-                            else:
+                        # replace
+                        if node_code_name_info + '.json' in code_files:
+                            replace_result = QtWidgets.QMessageBox.warning(self,
+                                                                           'Replacing',
+                                                                           'have same name node, are you sure to replace?',
+                                                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                            if replace_result == QtWidgets.QMessageBox.Yes:
                                 with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
                                     json.dump(code_info_dict, f)
                                 self.save_tag_to_json_info(code_tag)
@@ -292,49 +250,90 @@ class SaveVexPyNodeInfo(QtWidgets.QWidget):
                                 self.del_old_json()
                                 self.close()
                         else:
-                            QtWidgets.QMessageBox.about(self, 'waring', 'please input code in houdini python node')
+                            with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
+                                json.dump(code_info_dict, f)
+                            self.save_tag_to_json_info(code_tag)
+                            tool_error_info.show_exception_info('message', 'Save Code Success.')
+                            self.del_old_json()
+                            self.close()
+                    else:
+                        QtWidgets.QMessageBox.about(self, 'waring', 'please input code in houdini python node')
 
-                    # if select wrangle node
-                    elif node_code_name_info and current_node_name == 'attribwrangle':
-                        code_path = tool_path_manager.vex_codes_path
-                        code_run_over_class = self.node.parm('class').eval()
-                        if code_run_over_class != 2:
-                            node_code_name = node_code_name_info + '_' + str(code_run_over_class)
+                # if select wrangle node
+                elif current_node_name == 'attribwrangle':
+                    code_path = tool_path_manager.vex_codes_path
+                    codes = current_node.parm('snippet').rawValue()
+                    run_over_class = current_node.parm('class').eval()
+                    # if select node have code text
+                    if codes:
+                        code_info_dict = {
+                            "tag": code_tag,
+                            "class": run_over_class,
+                            "info": codes
+                        }
+                        allfiles = os.listdir(code_path)
+                        files = [x for x in allfiles if x.split('.')[-1].lower() == 'json']
 
-                        codes = self.node.parm('snippet').rawValue()
-
-                        # if select node have code text
-                        if codes:
-                            code_info_dict = {
-                                "tag": code_tag,
-                                "info": codes
-                            }
-                            allfiles = os.listdir(code_path)
-                            files = [x for x in allfiles if x.split('.')[-1].lower() == 'json']
-
-                            # replace
-                            if node_code_name_info + '.json' in files:
-                                replace_result = QtWidgets.QMessageBox.warning(self,
-                                                                               'Replacing',
-                                                                               'have same name node, are you sure to replace?',
-                                                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-                                if replace_result == QtWidgets.QMessageBox.Yes:
-                                    with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
-                                        json.dump(code_info_dict, f)
-                                    self.save_tag_to_json_info(code_tag)
-                                    tool_error_info.show_exception_info('message', 'Save Code Success.')
-                                    self.del_old_json()
-                                    self.close()
-                            else:
+                        # replace
+                        if node_code_name_info + '.json' in files:
+                            replace_result = QtWidgets.QMessageBox.warning(self,
+                                                                           'Replacing',
+                                                                           'have same name node, are you sure to replace?',
+                                                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                            if replace_result == QtWidgets.QMessageBox.Yes:
                                 with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
                                     json.dump(code_info_dict, f)
-                                    self.save_tag_to_json_info(code_tag)
-                                    tool_error_info.show_exception_info('message', 'Save Code Success.')
-                                    self.del_old_json()
-                                    self.close()
+                                self.save_tag_to_json_info(code_tag)
+                                tool_error_info.show_exception_info('message', 'Save Code Success.')
+                                self.del_old_json()
+                                self.close()
                         else:
-                            QtWidgets.QMessageBox.about(self, 'waring',
-                                                        'please input vex code in houdini attribute wrangle node')
+                            with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
+                                json.dump(code_info_dict, f)
+                                self.save_tag_to_json_info(code_tag)
+                                tool_error_info.show_exception_info('message', 'Save Code Success.')
+                                self.del_old_json()
+                                self.close()
+                    else:
+                        QtWidgets.QMessageBox.about(self, 'waring',
+                                                    'please input vex code in houdini attribute wrangle node')
+
+            else:
+                # if have code text
+                if node_code_text_info:
+                    code_info_dict = {
+                        "tag": code_tag,
+                        "class": run_over_class,
+                        "info": node_code_text_info
+
+                    }
+                    if code_type_index == 0:
+                        code_path = tool_path_manager.vex_codes_path
+                    else:
+                        code_path = tool_path_manager.python_codes_path
+                    all_files = os.listdir(code_path)
+                    code_files = [x for x in all_files if x.split('.')[-1].lower() == 'json']
+
+                    # replace
+                    if node_code_name_info + '.json' in code_files:
+                        replace_result = QtWidgets.QMessageBox.warning(self,
+                                                                       'Replacing',
+                                                                       'have same name node, are you sure to replace?',
+                                                                       QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                        if replace_result == QtWidgets.QMessageBox.Yes:
+                            with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
+                                json.dump(code_info_dict, f)
+                            self.save_tag_to_json_info(code_tag)
+                            tool_error_info.show_exception_info('message', 'Save Code Success.')
+                            self.del_old_json()
+                            self.close()
+                    else:
+                        with open(code_path + '/' + node_code_name_info + '.json', 'w') as f:
+                            json.dump(code_info_dict, f)
+                            self.save_tag_to_json_info(code_tag)
+                            tool_error_info.show_exception_info('message', 'Save Code Success.')
+                            self.del_old_json()
+                            self.close()
 
                 else:
                     QtWidgets.QMessageBox.about(self, 'warning', 'please select houdini node or input code')

@@ -158,14 +158,17 @@ class SetWidgetInfo(QtWidgets.QWidget):
             code_file_path = path + '/' + file + '.json'
             code_info = ''
             code_tag = ''
+            code_class = 2
             try:
                 with open(code_file_path, 'r') as (f):
                     info = json.load(f)
                 code_tag = info['tag']
                 code_info = info['info']
+                code_class = info['class']
             except:
-                print('read code info got error , path : %s' % path)
-            return file, code_info, code_tag
+                tool_error_info = ExceptionInfoWidgetClass()
+                tool_error_info.show_exception_info('error', 'read code info got error , path : %s' % path)
+            return file, code_info, code_tag, code_class
 
     @classmethod
     def get_current_code_path_by_combo_box_index(cls, combo_box_index) -> str:
@@ -289,21 +292,6 @@ class HouNodesUtilities(QWidget):
         return result_pan
 
     @classmethod
-    def check_str_end_with_class_number(cls, file_name) -> bool:
-        """
-            Check Current File Name Is End Of Specify Number
-        :param file_name:  File Name To Check
-        :return: Bool
-        """
-        if file_name:
-            find_str = range(4)
-            name = file_name.split('_')[(-1)]
-            if name in find_str:
-                return True
-            else:
-                return False
-
-    @classmethod
     def import_code_to_houdini_by_code_info(cls, code_info, code_type) -> None:
         """
             Create Houdini Node By Current Code Type , And Write Code Info Into Node
@@ -318,26 +306,13 @@ class HouNodesUtilities(QWidget):
                 root = pane.pwd()
                 if code_type == 0:
                     code_name = code_info[0]
-                    if cls.check_str_end_with_class_number(code_name):
-                        run_class_dict = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4}
-                        run_class_name = code_name.split('_')[(-1)]
-                        node_run_class = run_class_dict[run_class_name]
-                        wrangle_name = ('_').join(code_name.split('_')[0:-1])
-                        try:
-                            wrangle_node = root.createNode('attribwrangle', wrangle_name)
-                        except:
-                            wrangle_node = root.createNode('attribwrangle')
+                    try:
+                        wrangle_node = root.createNode('attribwrangle', code_name)
                         wrangle_node.setPosition(node_pos)
                         wrangle_node.parm('snippet').set(code_info[1])
-                        wrangle_node.parm('class').set(node_run_class)
-                    else:
-                        try:
-                            wrangle_node = root.createNode('attribwrangle', code_name)
-                            wrangle_node.setPosition(node_pos)
-                            wrangle_node.parm('snippet').set(code_info[1])
-                            wrangle_node.parm('class').set(2)
-                        except:
-                            err_info.show_exception_info('error', 'Create Vex Code Got Wrong')
+                        wrangle_node.parm('class').set(code_info[3])
+                    except:
+                        err_info.show_exception_info('error', 'Create Vex Code Got Wrong')
 
 
                 elif code_type == 1:
@@ -453,7 +428,7 @@ class CheckableComboBox(QtWidgets.QComboBox):
         text_string = ', '.join(text_container)
         self.lineEdit().setText(text_string)
 
-    def addItems(self, items, itemList=None) -> None:
+    def addItems(self, items: List[str], itemList=None) -> None:
         """
             Add Item List To ComboBox
         :param items: Target Item List
@@ -466,7 +441,7 @@ class CheckableComboBox(QtWidgets.QComboBox):
                 data = None
             self.addItem(text, data)
 
-    def addItem(self, text, userData=None) -> None:
+    def addItem(self, text: str, userData=None) -> None:
         """
             Add Item To ComboBox
         :param text:  Item Text
@@ -481,3 +456,4 @@ class CheckableComboBox(QtWidgets.QComboBox):
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
         item.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
         self.model().appendRow(item)
+
