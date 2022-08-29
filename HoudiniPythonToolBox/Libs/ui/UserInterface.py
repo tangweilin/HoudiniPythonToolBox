@@ -249,6 +249,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.__vex_py_tab_list_widget.itemClicked.connect(self.__on_vex_py_tab_list_selection_change)
         self.__vex_py_tab_code_tag = ToolUtilityClasses.CheckableComboBox()
         self.__vex_py_tab_code_tag.model().dataChanged.connect(self.on_vex_py_tab_code_tag_changed)
+
         self.__vex_py_tab_code_info = QtWidgets.QPlainTextEdit()
         self.__vex_py_tab_code_info.setReadOnly(True)
 
@@ -975,7 +976,11 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         :param tag:
         """
         if tag:
+            tag = tag.replace(' ', '').split(',')
+            self.__vex_py_tab_code_tag.set_all_checked(QtCore.Qt.Unchecked)
             self.__vex_py_tab_code_tag.update_check_state_by_str(tag)
+        else:
+            self.__vex_py_tab_code_tag.set_all_checked(QtCore.Qt.Checked)
 
     def __on_filter_tab_edit_changed(self) -> None:
         """
@@ -985,12 +990,13 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         filter_text = self.__line_edit_filter.text()
         main_tab_index = self.__main_tab_widget.currentIndex()
         if main_tab_index == 0:  # code info preset tab
-
             self.search_text_in_list_widget(self.__vex_py_tab_list_widget, filter_text)
             self.__on_vex_py_tab_list_selection_change()
-            if filter_text.lower().startswith('t:'):
-                filter_text = filter_text[2:]
+            if filter_text.lower().startswith('tag:'):
+                filter_text = filter_text[4:]
                 self.change_vex_py_tag_combo_by_str(filter_text)
+            else:
+                self.__vex_py_tab_code_tag.set_all_checked(QtCore.Qt.Unchecked)
         elif main_tab_index == 1:  # node preset tab
             self.search_text_in_list_widget(self.__node_preset_tab_list_widget, filter_text)
             self.__on_node_preset_tab_list_selection_change()
@@ -1085,6 +1091,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         if self.tag_list:
             for tag in self.tag_list:
                 self.__vex_py_tab_code_tag.addItem(tag)
+            self.__vex_py_tab_code_tag.lineEdit().setText('')
 
     def __on_vex_py_tab_import_btn_clicked(self) -> None:
         """

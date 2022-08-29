@@ -417,6 +417,10 @@ class CheckableComboBox(QtWidgets.QComboBox):
         super().hidePopup()
         self.startTimer(100)
 
+    def set_all_checked(self, checked: QtCore.Qt.CheckState) -> None:
+        for i in range(self.model().rowCount()):
+            self.model().item(i).setCheckState(checked)
+
     def update_line_edit_field(self):
         """
             Update LineEdit Field When Model Data Changed
@@ -428,12 +432,11 @@ class CheckableComboBox(QtWidgets.QComboBox):
         text_string = ', '.join(text_container)
         self.lineEdit().setText(text_string)
 
-    def update_check_state_by_str(self, tag: str) -> None:
+    def update_check_state_by_str(self, tag: List[str]) -> None:
         for i in range(self.model().rowCount()):
-            if tag in self.model().item(i).text():
-                self.model().item(i).setCheckState(QtCore.Qt.Checked)
-            else:
-                self.model().item(i).setCheckState(QtCore.Qt.Unchecked)
+            for t in tag:
+                if t in self.model().item(i).text():
+                    self.model().item(i).setCheckState(QtCore.Qt.Checked)
 
     def addItems(self, items: List[str], itemList=None) -> None:
         """
