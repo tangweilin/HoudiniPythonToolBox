@@ -1,1 +1,1 @@
-{"tag": ["root", "vex_help", "group"], "class": 2, "info": "if(@P.y>0)\n   @group_up = 1;\nif(@ptnum==4)\n   @group_up = 0;"}
+{"tag": ["vex_help", "group"], "class": 2, "info": "if(@P.y>0)\n   @group_up = 1;\nif(@ptnum==4)\n   @group_up = 0;"}

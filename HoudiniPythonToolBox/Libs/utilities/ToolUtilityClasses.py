@@ -428,6 +428,13 @@ class CheckableComboBox(QtWidgets.QComboBox):
         text_string = ', '.join(text_container)
         self.lineEdit().setText(text_string)
 
+    def update_check_state_by_str(self, tag: str) -> None:
+        for i in range(self.model().rowCount()):
+            if tag in self.model().item(i).text():
+                self.model().item(i).setCheckState(QtCore.Qt.Checked)
+            else:
+                self.model().item(i).setCheckState(QtCore.Qt.Unchecked)
+
     def addItems(self, items: List[str], itemList=None) -> None:
         """
             Add Item List To ComboBox

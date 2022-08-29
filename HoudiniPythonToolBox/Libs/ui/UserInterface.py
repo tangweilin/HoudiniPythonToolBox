@@ -247,13 +247,10 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         # vex python code main ui
         self.__vex_py_tab_list_widget = QtWidgets.QListWidget()
         self.__vex_py_tab_list_widget.itemClicked.connect(self.__on_vex_py_tab_list_selection_change)
-        self.__vex_py_tab_code_tag = QtWidgets.QComboBox()
-        self.__vex_py_tab_code_tag.currentIndexChanged.connect(self.on_vex_py_tab_code_tag_changed)
+        self.__vex_py_tab_code_tag = ToolUtilityClasses.CheckableComboBox()
+        self.__vex_py_tab_code_tag.model().dataChanged.connect(self.on_vex_py_tab_code_tag_changed)
         self.__vex_py_tab_code_info = QtWidgets.QPlainTextEdit()
         self.__vex_py_tab_code_info.setReadOnly(True)
-        self.__test_checked_combo_box = ToolUtilityClasses.CheckableComboBox()
-        tag_list = ['root', 'geo', 'group', 'attr']
-        self.__test_checked_combo_box.addItems(tag_list)
 
         # vex python code type combo box
         self.__vex_py_tab_code_type_combo_box = QtWidgets.QComboBox()
@@ -273,10 +270,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         vex_py_tab_v_sub_layout.addWidget(self.__vex_py_tab_code_info)
         vex_py_tab_h_sub_layout.addLayout(vex_py_tab_v_sub_layout)
 
-        vex_py_tab_v_sub_layout_1.addWidget(self.__vex_py_tab_code_tag)
-
         vex_py_tab_v_sub_layout_1.addWidget(self.__vex_py_tab_list_widget)
-        vex_py_tab_v_sub_layout_1.addWidget(self.__test_checked_combo_box)
+        vex_py_tab_v_sub_layout_1.addWidget(self.__vex_py_tab_code_tag)
         vex_py_tab_h_sub_layout.addLayout(vex_py_tab_v_sub_layout_1)
 
         vex_py_tab_h_layout.addWidget(self.__vex_py_tab_add_btn)
@@ -980,9 +975,7 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         :param tag:
         """
         if tag:
-            for t in self.tag_list:
-                if t.find(tag) != -1:
-                    self.__vex_py_tab_code_tag.setCurrentText(t)
+            self.__vex_py_tab_code_tag.update_check_state_by_str(tag)
 
     def __on_filter_tab_edit_changed(self) -> None:
         """
@@ -1038,20 +1031,21 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
             If Current Tag Changed Hide Current List Widget
         """
         self.__setup_vex_py_tab_list_widget_info()
-        list_widget = self.__vex_py_tab_list_widget
-        dict_list = self.__vex_py_tab_code_tag_dict_list
-        for dict in dict_list:
-            for item_node in dict.keys():
-                for i in range(list_widget.count()):
-                    if list_widget.item(i):
-                        item_name = list_widget.item(i).text()
-                        show_flag = False
-                        if dict['item_name'] == item_name:
-                            for tag in dict['item_tag']:
-                                if tag == self.__vex_py_tab_code_tag.currentText():
-                                    show_flag = True
-                            if not show_flag:
-                                list_widget.takeItem(i)
+        if self.__vex_py_tab_code_tag.currentText():
+            list_widget = self.__vex_py_tab_list_widget
+            dict_list = self.__vex_py_tab_code_tag_dict_list
+            for dict in dict_list:
+                for item_node in dict.keys():
+                    for i in range(list_widget.count()):
+                        if list_widget.item(i):
+                            item_name = list_widget.item(i).text()
+                            show_flag = False
+                            if dict['item_name'] == item_name:
+                                for tag in dict['item_tag']:
+                                    if tag in self.__vex_py_tab_code_tag.currentText():
+                                        show_flag = True
+                                if not show_flag:
+                                    list_widget.takeItem(i)
 
     def __setup_vex_py_tab_list_widget_info(self) -> None:
         """
