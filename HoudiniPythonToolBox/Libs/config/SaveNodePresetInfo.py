@@ -215,9 +215,11 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         if not self.update:
             self.node_name_line_edit.setText('')
 
-    def is_update_node_preset(self, update, node_type='', node_name='') -> None:
+    def is_update_node_preset(self, update, node_type='', node_name='', node_author='', node_mark='') -> None:
         """
             Set Flag For Node Info Save Or Update
+        :param node_mark: Node Mark Info
+        :param node_author:  Node Author Info
         :param update: Flag -> Bool
         :param node_type: Node Class Name
         :param node_name: Current Node Name
@@ -232,6 +234,8 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                 self.node_folder_line_edit.setEnabled(False)
                 self.node_name_line_edit.setText(node_name)
                 self.node_name_line_edit.setEnabled(False)
+                self.author_name_line_edit.setText(node_author)
+                self.remark_text_line_edit.setPlainText(node_mark)
         else:
             self.code_type_choose_combo_box.setEnabled(True)
             self.node_name_line_edit.setEnabled(True)

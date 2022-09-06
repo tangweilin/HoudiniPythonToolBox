@@ -1195,6 +1195,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         if info_list:
             author = info_list[0]
             remark = info_list[1]
+            self.node_author = author
+            self.node_remark = remark
             self.__node_preset_tab_label_name.setText(author)
             self.__node_preset_tab_label_remark.setText(remark)
 
@@ -1223,7 +1225,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
                 ex = SaveNodePresetInfo.SaveNodePresetInfo()
                 ex.setParent(self, QtCore.Qt.Window)
                 # is update node
-                ex.is_update_node_preset(True, self.node_type, name)
+                ex.is_update_node_preset(True, node_type=self.node_type, node_name=name,
+                                         node_author=self.node_author, node_mark=self.node_remark)
                 ex.show()
             return
         else:
