@@ -21,6 +21,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
     """
         Saving Current Node Preset Info To Json File
     """
+
     def __init__(self):
         super(SaveNodePresetInfo, self).__init__()
 
@@ -42,6 +43,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         node_name_h_layout = QtWidgets.QHBoxLayout()
         author_h_layout = QtWidgets.QHBoxLayout()
         remark_h_layout = QtWidgets.QHBoxLayout()
+        node_folder_h_layout = QtWidgets.QHBoxLayout()
 
         self.save_btn = QtWidgets.QPushButton('save')
         self.save_btn.clicked.connect(self.save_node_preset)
@@ -49,9 +51,15 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         self.reset_btn.clicked.connect(self.reset_node_preset)
         tool_widget_utility_func.set_widget_icon(self.save_btn, 'save_node.png')
         tool_widget_utility_func.set_widget_icon(self.reset_btn, 'reset_node.png')
+
+        self.node_folder_line_edit = QtWidgets.QLineEdit()
+        self.node_folder_line_edit.setPlaceholderText('Node Folder')
+
         self.code_type_choose_combo_box = QtWidgets.QComboBox()
-        self.code_type_choose_combo_box.addItem('obj')
-        self.code_type_choose_combo_box.addItem('sop')
+        self.code_type_choose_combo_box.currentIndexChanged.connect(self.change_folder_name)
+        path_list = self.get_node_path_folders()
+        for path in path_list:
+            self.code_type_choose_combo_box.addItem(path)
 
         node_name_label = QtWidgets.QLabel()
         node_name_label.setText('node name:')
@@ -92,10 +100,32 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         h_layout.addWidget(self.save_btn)
         h_layout.addWidget(self.reset_btn)
         v_layout.addLayout(h_layout)
-        v_layout.addWidget(self.code_type_choose_combo_box)
+        node_folder_h_layout.addWidget(self.node_folder_line_edit)
+        node_folder_h_layout.addWidget(self.code_type_choose_combo_box)
+        v_layout.addLayout(node_folder_h_layout)
         v_layout.addLayout(node_name_h_layout)
         v_layout.addLayout(author_h_layout)
         v_layout.addLayout(remark_h_layout)
+        self.change_folder_name()
+
+    def change_folder_name(self) -> None:
+        """
+            Change Folder Name
+        :return: None
+        """
+        self.node_folder_line_edit.setText(self.code_type_choose_combo_box.currentText())
+
+    def get_node_path_folders(self) -> list:
+        """
+            Get Node Path Folders
+        :return: list
+        """
+        path_list = []
+        path = os.listdir(tool_path_manager.node_preset_path)
+        for p in path:
+            if os.path.isdir(os.path.join(tool_path_manager.node_preset_path, p)):
+                path_list.append(p)
+        return path_list
 
     def save_node_preset(self) -> None:
         """
@@ -133,19 +163,24 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                     node_category_prefix = 'lop'
                 else:
                     node_category_prefix = node_category_name.lower()
-                node_class = self.code_type_choose_combo_box.currentText()
                 author = self.author_name_line_edit.text()
                 remark = self.remark_text_line_edit.toPlainText()
                 node_preset_path = tool_path_manager.node_preset_path
+                node_folder = self.node_folder_line_edit.text()
+                node_final_path = os.path.join(node_preset_path, node_folder)
+                if not os.path.exists(node_final_path):
+                    os.mkdir(node_final_path)
 
-                all_files = os.listdir(node_preset_path)
+                all_files = os.listdir(node_final_path)
                 hip_files = [x for x in all_files if x.split('.')[-1].startswith('nodepresets')]
                 files = [x for x in hip_files if x.split('_')[0].lower().startswith(node_category_prefix)]
-                num = len(files)
-                file_name = node_category_prefix + '_' + name
+                if  name.split('_')[0].lower().startswith(node_category_prefix):
+                    file_name = name
+                else:
+                    file_name = node_category_prefix + '_' + name
 
-                file_full_path = node_preset_path + '/' + file_name + '.nodepresets'
-                info_full_path = node_preset_path + '/' + file_name + '.json'
+                file_full_path = node_final_path + '/' + file_name + '.nodepresets'
+                info_full_path = node_final_path + '/' + file_name + '.json'
                 all_info = {'author': author, 'remark': remark}
                 # replace
                 if file_name + '.nodepreset' in files:
@@ -159,7 +194,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
 
                         self.close()
                         # custom screen shot
-                        shot = ScreenShotTool.ScreenShotTool(file_name, node_preset_path)
+                        shot = ScreenShotTool.ScreenShotTool(file_name, node_final_path)
                         shot.show()
                 else:
                     parent_node.saveItemsToFile(nodes, file_full_path)
@@ -167,7 +202,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                         json.dump(all_info, f)
                     self.close()
                     # custom screen shot
-                    shot = ScreenShotTool.ScreenShotTool(file_name, node_preset_path)
+                    shot = ScreenShotTool.ScreenShotTool(file_name, node_final_path)
                     shot.show()
 
     def reset_node_preset(self) -> None:
@@ -180,7 +215,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         if not self.update:
             self.node_name_line_edit.setText('')
 
-    def is_update_node_preset(self, update, node_type='obj', node_name='') -> None:
+    def is_update_node_preset(self, update, node_type='', node_name='') -> None:
         """
             Set Flag For Node Info Save Or Update
         :param update: Flag -> Bool
@@ -192,7 +227,9 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         if update:
             if node_type:
                 self.code_type_choose_combo_box.setCurrentText(node_type)
+                self.change_folder_name()
                 self.code_type_choose_combo_box.setEnabled(False)
+                self.node_folder_line_edit.setEnabled(False)
                 self.node_name_line_edit.setText(node_name)
                 self.node_name_line_edit.setEnabled(False)
         else:
@@ -204,12 +241,12 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         """
             Update Current Node Screen Shot
         :param current_item: Current Select None In List Widget
-        :param node_type: Node Class Name
+        :param node_type: Node Folder Name
         :return: None
         """
         if current_item:
             item_name = current_item.text()
-            file_name = node_type + '_' + item_name
+            file_name = node_type + '/' + item_name
             node_preset_path = tool_path_manager.node_preset_path
             shot = ScreenShotTool.ScreenShotTool(file_name, node_preset_path)
             shot.show()
@@ -221,7 +258,7 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
         """
             Delete Current Select Nodes Info From Json File
         :param list_widget: Nodes List Widget
-        :param node_type: Node Class Name
+        :param node_type: Node Folder Name
         :return: None
         """
         items = list_widget.selectedItems()
@@ -232,9 +269,9 @@ class SaveNodePresetInfo(QtWidgets.QWidget):
                 for item in items:
                     node_path = tool_path_manager.node_preset_path
                     file_name = item.text()
-                    full_path = node_path + '/' + node_type + '_' + file_name + '.nodepresets'
-                    image_path = node_path + '/' + node_type + '_' + file_name + '.jpg'
-                    info_path = node_path + '/' + node_type + '_' + file_name + '.json'
+                    full_path = node_path + '/' + node_type + '/' + file_name + '.nodepresets'
+                    image_path = node_path + '/' + node_type + '/' + file_name + '.jpg'
+                    info_path = node_path + '/' + node_type + '/' + file_name + '.json'
                     list_widget.takeItem(list_widget.row(item))
                     namede = file_name.encode('utf-8')
                     try:

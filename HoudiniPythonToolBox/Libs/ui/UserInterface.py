@@ -85,7 +85,8 @@ class HoudiniPythonTools(QtWidgets.QMainWindow):
         self.button_type_list = ['Common', 'Obj', 'Sop', 'Dop', 'Top', 'Kine_fx', 'Solaris']
 
         # all types of nodes
-        self.node_type_list = ['obj', 'sop', 'vop', 'dop', 'top']
+        SaveNodePresetInfoClass = SaveNodePresetInfo.SaveNodePresetInfo()
+        self.node_type_list = SaveNodePresetInfoClass.get_node_path_folders()
 
         # main toolbar widgets
         self.__setup_tool_bar_widget_layout()

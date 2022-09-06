@@ -93,16 +93,14 @@ class SetWidgetInfo(QtWidgets.QWidget):
             Add Item Node To List Widget With Json File
         :param list_widget:  Current List Widget
         :param path:  Node Path
-        :param node_class_type:  Node Class Name
+        :param node_class_type:  Node Folder Name
         :return: None
         """
-        all_files = os.listdir(path)
+        all_files = os.listdir(os.path.join(path, node_class_type))
         hip_files = [x for x in all_files if x.split('.')[(-1)].startswith('nodepresets')]
 
-        files = [x for x in hip_files if x.split('_')[0].lower().startswith(node_class_type)]
-
-        for file in files:
-            item_name = ('_').join(file.split('.')[0].split('_')[1:])
+        for file in hip_files:
+            item_name = file.split('.')[0]
             item = QtWidgets.QListWidgetItem(list_widget)
             item.setText(item_name)
             item.setSizeHint(QtCore.QSize(200, 30))
@@ -113,12 +111,12 @@ class SetWidgetInfo(QtWidgets.QWidget):
             Find Node Screen Shot Path By Current Select List Widget Item
         :param path: Node Path
         :param current_item: Current Select Item
-        :param node_type: Node Class Name
+        :param node_type: Node Folder Name
         :return: Screen Shot Image Path
         """
         if current_item:
             file_name = current_item.text()
-            image_path = path + '/' + node_type + '_' + file_name + '.jpg'
+            image_path = path + '/' + node_type + '/' + file_name + '.jpg'
             return image_path
 
     @classmethod
@@ -127,12 +125,12 @@ class SetWidgetInfo(QtWidgets.QWidget):
             Get Node Remark Info By Current Select List Widget Item
         :param path:  Node Path
         :param current_item:  Current Select Item
-        :param node_type:  Node Class Name
+        :param node_type:  Node Folder Name
         :return: Two Value Of Tuple (Author,Remark)
         """
         if current_item:
             file_name = current_item.text()
-            info_path = tool_path_manager.node_preset_path + '/' + node_type + '_' + file_name + '.json'
+            info_path = tool_path_manager.node_preset_path + '/' + node_type + '/' + file_name + '.json'
             info_list = None
             try:
                 with open(info_path, 'r') as (f):
@@ -186,20 +184,20 @@ class SetWidgetInfo(QtWidgets.QWidget):
             Get Node Preset Info From Json File By Current Select List Widget Item And Create Houdini Nodes
         :param path: Node Path
         :param current_item: Current Select Item
-        :param node_type: Node Class Name
+        :param node_type: Node Folder Name
         :return Str -> Node Preset Info
         """
         if current_item:
             file = current_item.text()
             if node_type:
                 node_preset_path = tool_path_manager.node_preset_path
-
-            node_full_path = node_preset_path + '/' + node_type + '_' + file + '.nodepresets'
+            node_class= file.split('_')[0]
+            node_full_path = node_preset_path + '/' + node_type + '/' + file + '.nodepresets'
             node_pane = HouNodesUtilities.get_hou_network_pane_tab()
             if node_pane:
                 pos = node_pane.selectPosition()
                 up_node = node_pane.pwd()
-                if node_type == 'sop':
+                if node_class == 'sop':
                     if up_node.type().name() == 'geo':
                         root = up_node
                         root.loadItemsFromFile(node_full_path)
@@ -213,7 +211,7 @@ class SetWidgetInfo(QtWidgets.QWidget):
                         root = up_node.createNode('geo')
                         root.setPosition(pos)
                         root.loadItemsFromFile(node_full_path)
-                elif node_type == 'obj' and up_node.type().name() == 'obj':
+                elif node_class == 'obj' and up_node.type().name() == 'obj':
                     root = up_node
                     root.loadItemsFromFile(node_full_path)
                     currentSelNodes = hou.selectedNodes()
@@ -223,7 +221,7 @@ class SetWidgetInfo(QtWidgets.QWidget):
                     for node in currentSelNodes:
                         node.move(move)
 
-                elif node_type == 'vop':
+                elif node_class == 'vop':
                     if up_node.type().name() == 'geo':
                         root = up_node.createNode('attribvop')
                         root.setPosition(pos)
