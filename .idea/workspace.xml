@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="15297cd0-c37a-4dd8-9b4d-602dc8068618" name="Changes" comment="Changes">
-      <change beforePath="$PROJECT_DIR$/.idea/HoudiniPythonToolBox.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/HoudiniPythonToolBox.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HoudiniPythonToolBox/Libs/ui/UserInterface.py" beforeDir="false" afterPath="$PROJECT_DIR$/HoudiniPythonToolBox/Libs/ui/UserInterface.py" afterDir="false" />
-    </list>
+    <list default="true" id="15297cd0-c37a-4dd8-9b4d-602dc8068618" name="Changes" comment="Changes" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,6 +9,12 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/AppData/Local/JetBrains/PyCharmCE2021.1/python_stubs/1487216753/PySide2/QtCore/QStringListModel.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/AppData/Local/JetBrains/PyCharmCE2021.1/python_stubs/1487216753/PySide2/QtCore/QObject.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/AppData/Local/JetBrains/PyCharmCE2021.1/python_stubs/1487216753/PySide2/QtWidgets/QListWidget.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/AppData/Local/JetBrains/PyCharmCE2021.1/python_stubs/1487216753/PySide2/QtWidgets/QWidget.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectId" id="2DDIeoRVczYszQOXFLE2A18SAMp" />
   <component name="ProjectViewState">
@@ -46,5 +48,6 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>
