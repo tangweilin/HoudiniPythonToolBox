@@ -1,0 +1,1 @@
+{"tag": ["geometry"], "class": 2, "info": "// create spare parameters\n@P = lerp(@P, normalize(@P - getbbox_center(0)) * ch('rad') + getbbox_center(0), ch('amt'));"}
